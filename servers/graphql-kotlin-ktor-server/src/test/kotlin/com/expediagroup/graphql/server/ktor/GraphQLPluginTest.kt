@@ -36,8 +36,9 @@ import io.ktor.http.contentType
 import io.ktor.serialization.jackson.jackson
 import io.ktor.server.application.Application
 import io.ktor.server.application.install
+import io.ktor.server.config.ApplicationConfig
 import io.ktor.server.plugins.statuspages.StatusPages
-import io.ktor.server.routing.Routing
+import io.ktor.server.routing.routing
 import io.ktor.server.testing.testApplication
 import io.ktor.websocket.Frame
 import io.ktor.websocket.readText
@@ -105,6 +106,9 @@ class GraphQLPluginTest {
             }
         """.trimIndent()
         testApplication {
+            environment {
+                config = ApplicationConfig("application.conf")
+            }
             val response = client.get("/sdl")
             assertEquals(HttpStatusCode.OK, response.status)
             assertEquals(expectedSchema, response.bodyAsText().trim())
@@ -114,6 +118,9 @@ class GraphQLPluginTest {
     @Test
     fun `server should handle valid GET requests`() {
         testApplication {
+            environment {
+                config = ApplicationConfig("application.conf")
+            }
             val response = client.get("/graphql") {
                 parameter("query", "query HelloQuery(\$name: String){ hello(name: \$name) }")
                 parameter("operationName", "HelloQuery")
@@ -127,6 +134,9 @@ class GraphQLPluginTest {
     @Test
     fun `server should return Method Not Allowed for Mutation GET requests`() {
         testApplication {
+            environment {
+                config = ApplicationConfig("application.conf")
+            }
             val response = client.get("/graphql") {
                 parameter("query", "mutation { foo }")
             }
@@ -137,6 +147,9 @@ class GraphQLPluginTest {
     @Test
     fun `server should return Bad Request for invalid GET requests`() {
         testApplication {
+            environment {
+                config = ApplicationConfig("application.conf")
+            }
             val response = client.get("/graphql")
             assertEquals(HttpStatusCode.BadRequest, response.status)
         }
@@ -145,6 +158,9 @@ class GraphQLPluginTest {
     @Test
     fun `server should handle valid POST requests`() {
         testApplication {
+            environment {
+                config = ApplicationConfig("application.conf")
+            }
             val client = createClient {
                 install(ContentNegotiation) {
                     jackson()
@@ -162,6 +178,9 @@ class GraphQLPluginTest {
     @Test
     fun `server should handle valid POST batch requests`() {
         testApplication {
+            environment {
+                config = ApplicationConfig("application.conf")
+            }
             val client = createClient {
                 install(ContentNegotiation) {
                     jackson()
@@ -186,6 +205,9 @@ class GraphQLPluginTest {
     @Test
     fun `server should return Bad Request for invalid POST requests with correct content type`() {
         testApplication {
+            environment {
+                config = ApplicationConfig("application.conf")
+            }
             val response = client.post("/graphql") {
                 contentType(ContentType.Application.Json)
             }
@@ -196,6 +218,9 @@ class GraphQLPluginTest {
     @Test
     fun `server should return Unsupported Media Type for POST requests with invalid content type`() {
         testApplication {
+            environment {
+                config = ApplicationConfig("application.conf")
+            }
             val response = client.post("/graphql")
             assertEquals(HttpStatusCode.UnsupportedMediaType, response.status)
         }
@@ -204,6 +229,10 @@ class GraphQLPluginTest {
     @Test
     fun `server should handle subscription requests`() {
         testApplication {
+            environment {
+                config = ApplicationConfig("application.conf")
+            }
+
             val client = createClient {
                 install(ContentNegotiation) {
                     jackson()
@@ -234,6 +263,10 @@ class GraphQLPluginTest {
     @Test
     fun `server should provide GraphiQL endpoint`() {
         testApplication {
+            environment {
+                config = ApplicationConfig("application.conf")
+            }
+
             val response = client.get("/graphiql")
             assertEquals(HttpStatusCode.OK, response.status)
 
@@ -260,7 +293,7 @@ fun Application.testGraphQLModule() {
         }
     }
     install(io.ktor.server.websocket.WebSockets)
-    install(Routing) {
+    routing {
         graphQLGetRoute()
         graphQLPostRoute()
         graphQLSubscriptionsRoute()
