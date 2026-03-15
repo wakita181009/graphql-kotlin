@@ -16,8 +16,9 @@
 
 package com.expediagroup.graphql.plugin.graalvm
 
-import com.fasterxml.jackson.core.type.TypeReference
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import tools.jackson.core.type.TypeReference
+import tools.jackson.databind.json.JsonMapper
+import tools.jackson.module.kotlin.KotlinModule
 import java.io.InputStream
 
 private const val DEFAULT_REFLECT_CONFIG = "default-reflect-config.json"
@@ -30,7 +31,7 @@ object DefaultMetadataLoader {
     fun loadDefaultReflectMetadata(): List<ClassMetadata> {
         val defaultResources = DefaultMetadataLoader.javaClass.classLoader.getResourceAsStream(DEFAULT_REFLECT_CONFIG)
             ?: throw IllegalStateException("Unable to load graphql-kotlin GraalVM reflect metadata")
-        val mapper = jacksonObjectMapper()
+        val mapper = JsonMapper.builder().addModule(KotlinModule.Builder().build()).build()
         return mapper.readValue(defaultResources, object : TypeReference<List<ClassMetadata>>() {})
     }
 

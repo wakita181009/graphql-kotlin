@@ -24,19 +24,21 @@ import com.expediagroup.graphql.server.spring.execution.REQUEST_PARAM_VARIABLES
 import com.expediagroup.graphql.server.spring.execution.SpringGraphQLContextFactory
 import com.expediagroup.graphql.server.spring.execution.graphQLMediaType
 import com.expediagroup.graphql.server.types.GraphQLRequest
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import graphql.GraphQLContext
 import graphql.schema.DataFetchingEnvironment
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.boot.webtestclient.autoconfigure.AutoConfigureWebTestClient
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.http.MediaType
 import org.springframework.test.web.reactive.server.WebTestClient
 import org.springframework.test.web.reactive.server.expectBody
 import org.springframework.web.reactive.function.server.ServerRequest
+import tools.jackson.databind.json.JsonMapper
+import tools.jackson.module.kotlin.KotlinModule
 
 @SpringBootTest(
     webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
@@ -46,6 +48,7 @@ import org.springframework.web.reactive.function.server.ServerRequest
     ]
 )
 @EnableAutoConfiguration
+@AutoConfigureWebTestClient
 class RouteConfigurationIT(@Autowired private val testClient: WebTestClient) {
 
     @Configuration
@@ -160,7 +163,7 @@ class RouteConfigurationIT(@Autowired private val testClient: WebTestClient) {
                     .queryParam(REQUEST_PARAM_QUERY, "{query}")
                     .queryParam(REQUEST_PARAM_VARIABLES, "{variables}")
                     .queryParam(REQUEST_PARAM_OPERATION_NAME, "{operationName}")
-                    .build(query, jacksonObjectMapper().writeValueAsString(variables), operationName)
+                    .build(query, JsonMapper.builder().addModule(KotlinModule.Builder().build()).build().writeValueAsString(variables), operationName)
             }
             .exchange()
             .verifyGraphQLRoute("Hello JUNIT GET with variables!")
@@ -283,8 +286,8 @@ class RouteConfigurationIT(@Autowired private val testClient: WebTestClient) {
 
         testClient.post()
             .uri("/graphql")
-            .accept(MediaType.APPLICATION_JSON_UTF8)
-            .contentType(MediaType.APPLICATION_JSON_UTF8)
+            .accept(MediaType.APPLICATION_JSON)
+            .contentType(MediaType.APPLICATION_JSON)
             .bodyValue(request)
             .exchange()
             .verifyGraphQLRoute("Hello JUNIT route with charset encoding!")

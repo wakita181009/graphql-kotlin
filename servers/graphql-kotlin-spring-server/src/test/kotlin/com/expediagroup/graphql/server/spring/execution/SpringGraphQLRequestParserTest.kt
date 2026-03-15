@@ -18,7 +18,6 @@ package com.expediagroup.graphql.server.spring.execution
 
 import com.expediagroup.graphql.server.types.GraphQLBatchRequest
 import com.expediagroup.graphql.server.types.GraphQLRequest
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -35,11 +34,13 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
+import tools.jackson.databind.json.JsonMapper
+import tools.jackson.module.kotlin.KotlinModule
 
 @ExperimentalCoroutinesApi
 class SpringGraphQLRequestParserTest {
 
-    private val objectMapper = jacksonObjectMapper()
+    private val objectMapper = JsonMapper.builder().addModule(KotlinModule.Builder().build()).build()
     private val parser = SpringGraphQLRequestParser(objectMapper)
 
     @Test

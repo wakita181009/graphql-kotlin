@@ -16,16 +16,17 @@
 
 package com.expediagroup.graphql.server.types
 
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import com.fasterxml.jackson.module.kotlin.readValue
 import org.junit.jupiter.api.Test
+import tools.jackson.databind.json.JsonMapper
+import tools.jackson.module.kotlin.KotlinModule
+import tools.jackson.module.kotlin.readValue
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 
 class GraphQLErrorTest {
 
-    private val mapper = jacksonObjectMapper()
+    private val mapper = JsonMapper.builder().addModule(KotlinModule.Builder().build()).build()
 
     @Test
     fun `Simple error is spec compliant with serialization`() {

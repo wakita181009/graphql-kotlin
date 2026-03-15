@@ -22,6 +22,7 @@ import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.boot.webtestclient.autoconfigure.AutoConfigureWebTestClient
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.http.MediaType
@@ -33,6 +34,7 @@ import java.util.UUID
     properties = ["graphql.packages=com.expediagroup.graphql.server.spring.execution"]
 )
 @EnableAutoConfiguration
+@AutoConfigureWebTestClient
 class SpringDataFetcherIT(@Autowired private val testClient: WebTestClient) {
 
     @Test

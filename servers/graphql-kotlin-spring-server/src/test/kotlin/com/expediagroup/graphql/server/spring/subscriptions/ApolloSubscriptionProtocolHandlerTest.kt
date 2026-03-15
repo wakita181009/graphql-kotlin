@@ -32,7 +32,6 @@ import com.expediagroup.graphql.server.spring.subscriptions.ApolloSubscriptionOp
 import com.expediagroup.graphql.server.types.GraphQLRequest
 import com.expediagroup.graphql.server.types.GraphQLResponse
 import com.expediagroup.graphql.server.types.GraphQLServerError
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
@@ -47,12 +46,14 @@ import reactor.test.StepVerifier
 import java.time.Duration
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
+import tools.jackson.databind.json.JsonMapper
+import tools.jackson.module.kotlin.KotlinModule
 
 @Deprecated(message = "subscriptions-transport-ws protocol is deprecated, this class will be removed in next major release")
 @ExperimentalCoroutinesApi
 class ApolloSubscriptionProtocolHandlerTest {
 
-    private val objectMapper = jacksonObjectMapper()
+    private val objectMapper = JsonMapper.builder().addModule(KotlinModule.Builder().build()).build()
     private val subscriptionHooks = SimpleSubscriptionHooks()
     private fun ApolloSubscriptionOperationMessage.toJson() = objectMapper.writeValueAsString(this)
     private val nullContextFactory: SpringSubscriptionGraphQLContextFactory = mockk {

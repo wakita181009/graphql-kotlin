@@ -22,24 +22,31 @@ import com.expediagroup.graphql.client.jackson.types.UndefinedFilter
 import com.expediagroup.graphql.client.serializer.GraphQLClientSerializer
 import com.expediagroup.graphql.client.types.GraphQLClientRequest
 import com.fasterxml.jackson.annotation.JsonInclude
-import com.fasterxml.jackson.databind.DeserializationFeature
-import com.fasterxml.jackson.databind.JavaType
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import tools.jackson.databind.JavaType
+import tools.jackson.databind.ObjectMapper
+import tools.jackson.databind.cfg.EnumFeature
+import tools.jackson.databind.json.JsonMapper
+import tools.jackson.module.kotlin.KotlinModule
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.reflect.KClass
 
 /**
  * Jackson based GraphQL request/response serializer.
  */
-class GraphQLClientJacksonSerializer(private val mapper: ObjectMapper = jacksonObjectMapper()) : GraphQLClientSerializer {
-    private val typeCache = ConcurrentHashMap<KClass<*>, JavaType>()
+class GraphQLClientJacksonSerializer(
+    mapper: JsonMapper = JsonMapper.builder()
+        .addModule(KotlinModule.Builder().build())
+        .build()
+) : GraphQLClientSerializer {
+    private val mapper: ObjectMapper = mapper.rebuild()
+        .enable(EnumFeature.READ_UNKNOWN_ENUM_VALUES_USING_DEFAULT_VALUE)
+        .changeDefaultPropertyInclusion { _ -> JsonInclude.Value.construct(JsonInclude.Include.NON_NULL, JsonInclude.Include.NON_NULL) }
+        .withConfigOverride(OptionalInput::class.java) { override ->
+            override.setInclude(JsonInclude.Value.empty().withValueInclusion(JsonInclude.Include.CUSTOM).withValueFilter(UndefinedFilter::class.java))
+        }
+        .build()
 
-    init {
-        mapper.enable(DeserializationFeature.READ_UNKNOWN_ENUM_VALUES_USING_DEFAULT_VALUE)
-        mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL)
-        mapper.configOverride(OptionalInput::class.java).include = JsonInclude.Value.empty().withValueInclusion(JsonInclude.Include.CUSTOM).withValueFilter(UndefinedFilter::class.java)
-    }
+    private val typeCache = ConcurrentHashMap<KClass<*>, JavaType>()
 
     override fun serialize(request: GraphQLClientRequest<*>): String = mapper.writeValueAsString(request)
 

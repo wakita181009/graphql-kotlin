@@ -30,20 +30,23 @@ import com.expediagroup.graphql.server.operations.Mutation
 import com.expediagroup.graphql.server.operations.Query
 import com.expediagroup.graphql.server.operations.Subscription
 import com.fasterxml.jackson.annotation.JsonInclude
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import io.github.classgraph.ClassGraph
 import io.github.classgraph.ScanResult
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import tools.jackson.databind.ObjectMapper
+import tools.jackson.databind.json.JsonMapper
+import tools.jackson.module.kotlin.KotlinModule
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.StandardCopyOption
 import java.util.ServiceLoader
 
 private val logger: Logger = LoggerFactory.getLogger("generateGraalVmMetadata")
-private val objectMapper: ObjectMapper = jacksonObjectMapper()
-    .setSerializationInclusion(JsonInclude.Include.NON_NULL)
+private val objectMapper: ObjectMapper = JsonMapper.builder()
+    .addModule(KotlinModule.Builder().build())
+    .changeDefaultPropertyInclusion { JsonInclude.Value.construct(JsonInclude.Include.NON_NULL, JsonInclude.Include.NON_NULL) }
+    .build()
 
 /**
  * Generate GraalVM reflect metadata for the underlying GraphQL schema.

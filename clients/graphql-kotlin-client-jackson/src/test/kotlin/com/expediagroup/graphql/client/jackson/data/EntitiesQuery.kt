@@ -20,8 +20,8 @@ import com.expediagroup.graphql.client.jackson.data.entitiesquery._Entity
 import com.expediagroup.graphql.client.jackson.data.scalars.AnyToAnyConverter
 import com.expediagroup.graphql.client.types.GraphQLClientRequest
 import com.fasterxml.jackson.annotation.JsonProperty
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize
-import com.fasterxml.jackson.databind.annotation.JsonSerialize
+import tools.jackson.databind.annotation.JsonDeserialize
+import tools.jackson.databind.annotation.JsonSerialize
 import kotlin.reflect.KClass
 
 class EntitiesQuery(

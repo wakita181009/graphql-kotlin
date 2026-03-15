@@ -29,9 +29,6 @@ import com.expediagroup.graphql.server.types.SubscriptionMessageNext
 import com.expediagroup.graphql.server.types.SubscriptionMessagePing
 import com.expediagroup.graphql.server.types.SubscriptionMessagePong
 import com.expediagroup.graphql.server.types.SubscriptionMessageSubscribe
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import com.fasterxml.jackson.module.kotlin.readValue
 import graphql.GraphQLContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.FlowPreview
@@ -52,6 +49,10 @@ import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicReference
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
+import tools.jackson.databind.ObjectMapper
+import tools.jackson.databind.json.JsonMapper
+import tools.jackson.module.kotlin.KotlinModule
+import tools.jackson.module.kotlin.readValue
 
 const val GRAPHQL_WS_PROTOCOL = "graphql-transport-ws"
 
@@ -66,7 +67,7 @@ abstract class GraphQLWebSocketServer<Session, Message>(
     private val subscriptionHooks: GraphQLSubscriptionHooks<Session>,
     private val requestHandler: GraphQLRequestHandler,
     private val initTimeoutMillis: Long,
-    private val objectMapper: ObjectMapper = jacksonObjectMapper()
+    private val objectMapper: ObjectMapper = JsonMapper.builder().addModule(KotlinModule.Builder().build()).build()
 ) {
     private val logger: Logger = LoggerFactory.getLogger(GraphQLWebSocketServer::class.java)
     private val subscriptionScope = CoroutineScope(SupervisorJob())

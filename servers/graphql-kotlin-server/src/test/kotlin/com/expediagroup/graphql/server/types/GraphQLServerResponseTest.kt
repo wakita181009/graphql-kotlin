@@ -18,9 +18,13 @@ package com.expediagroup.graphql.server.types
 
 import com.alibaba.fastjson2.JSON
 import com.alibaba.fastjson2.JSONWriter
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import com.fasterxml.jackson.module.kotlin.readValue
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.module.kotlin.KotlinModule as Jackson2KotlinModule
+import com.fasterxml.jackson.module.kotlin.readValue as jackson2ReadValue
 import org.junit.jupiter.api.Test
+import tools.jackson.databind.json.JsonMapper
+import tools.jackson.module.kotlin.KotlinModule
+import tools.jackson.module.kotlin.readValue
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
@@ -34,7 +38,8 @@ class GraphQLServerResponseTest {
 
     class MyQuery(val foo: Int)
 
-    private val mapper = jacksonObjectMapper()
+    private val mapper = JsonMapper.builder().addModule(KotlinModule.Builder().build()).build()
+    private val jackson2Mapper = ObjectMapper().registerModule(Jackson2KotlinModule.Builder().build())
 
     @Test
     fun `jackson verify simple serialization`() {
@@ -212,6 +217,55 @@ class GraphQLServerResponseTest {
         val extensions = first.extensions
         assertNotNull(extensions)
         assertEquals(2, extensions["bar"])
+
+        val second = response.responses[1]
+        val secondData = second.data as? Map<*, *>?
+        assertNotNull(secondData)
+        assertEquals(2, secondData["foo"])
+        assertNull(second.errors)
+        assertNull(second.extensions)
+    }
+
+    @Test
+    fun `jackson2 verify simple deserialization`() {
+        val input = """{"data":{"foo":1}}"""
+        val response = jackson2Mapper.jackson2ReadValue<GraphQLServerResponse>(input)
+        assertTrue(response is GraphQLResponse<*>)
+        val data = response.data as? Map<*, *>?
+        assertNotNull(data)
+        assertEquals(1, data["foo"])
+        assertNull(response.errors)
+        assertNull(response.extensions)
+    }
+
+    @Test
+    fun `jackson2 verify complete deserialization`() {
+        val input = """{"data":{"foo":1},"errors":[{"message":"my error"}],"extensions":{"bar":2}}"""
+        val response = jackson2Mapper.jackson2ReadValue<GraphQLServerResponse>(input)
+        assertTrue(response is GraphQLResponse<*>)
+        val data = response.data as? Map<*, *>?
+        assertNotNull(data)
+        assertEquals(1, data["foo"])
+        assertEquals(1, response.errors?.size)
+        assertEquals("my error", response.errors?.first()?.message)
+        val extensions = response.extensions
+        assertNotNull(extensions)
+        assertEquals(2, extensions["bar"])
+    }
+
+    @Test
+    fun `jackson2 verify batch response deserialization`() {
+        val serialized =
+            """[{"data":{"foo":1},"errors":[{"message":"my error"}],"extensions":{"bar":2}},{"data":{"foo":2}}]"""
+        val response = jackson2Mapper.jackson2ReadValue<GraphQLServerResponse>(serialized)
+        assertTrue(response is GraphQLBatchResponse)
+        assertEquals(2, response.responses.size)
+        val first = response.responses[0]
+        val firstData = first.data as? Map<*, *>?
+        assertNotNull(firstData)
+        assertEquals(1, firstData["foo"])
+        assertEquals(1, first.errors?.size)
+        assertEquals("my error", first.errors?.first()?.message)
 
         val second = response.responses[1]
         val secondData = second.data as? Map<*, *>?

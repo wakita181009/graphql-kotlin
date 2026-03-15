@@ -20,8 +20,8 @@ import com.expediagroup.graphql.client.jackson.data.scalars.AnyToUUIDConverter
 import com.expediagroup.graphql.client.jackson.data.scalars.UUIDToAnyConverter
 import com.expediagroup.graphql.client.types.GraphQLClientRequest
 import com.fasterxml.jackson.annotation.JsonProperty
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize
-import com.fasterxml.jackson.databind.annotation.JsonSerialize
+import tools.jackson.databind.annotation.JsonDeserialize
+import tools.jackson.databind.annotation.JsonSerialize
 import java.util.UUID
 import kotlin.reflect.KClass
 

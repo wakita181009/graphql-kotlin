@@ -24,12 +24,12 @@ import com.expediagroup.graphql.server.spring.subscriptions.SpringSubscriptionGr
 import com.expediagroup.graphql.server.spring.subscriptions.SubscriptionWebSocketHandler
 import com.expediagroup.graphql.server.spring.subscriptions.DefaultWebSocketGraphQLRequestParser
 import com.expediagroup.graphql.server.spring.subscriptions.SpringGraphQLSubscriptionRequestParser
-import com.fasterxml.jackson.databind.ObjectMapper
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Import
+import tools.jackson.databind.ObjectMapper
 
 @ConditionalOnProperty(prefix = "graphql.subscriptions", name = ["protocol"], havingValue = "GRAPHQL_WS", matchIfMissing = true)
 @Configuration

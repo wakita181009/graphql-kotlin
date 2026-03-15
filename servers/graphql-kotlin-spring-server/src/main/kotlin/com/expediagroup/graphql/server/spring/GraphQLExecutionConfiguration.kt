@@ -23,13 +23,14 @@ import com.expediagroup.graphql.server.spring.execution.SpringKotlinDataFetcherF
 import graphql.execution.DataFetcherExceptionHandler
 import graphql.execution.SimpleDataFetcherExceptionHandler
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
-import org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.ApplicationContext
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
-import org.springframework.context.annotation.Import
 import java.util.Optional
+import tools.jackson.databind.ObjectMapper
+import tools.jackson.databind.json.JsonMapper
+import tools.jackson.module.kotlin.KotlinModule
 
 /**
  * The root configuration class that other configurations can import to get the basic
@@ -37,12 +38,15 @@ import java.util.Optional
  */
 @Configuration
 @EnableConfigurationProperties(GraphQLConfigurationProperties::class)
-@Import(JacksonAutoConfiguration::class)
 class GraphQLExecutionConfiguration {
     @Bean
     @ConditionalOnMissingBean
     fun dataFetcherFactoryProvider(applicationContext: ApplicationContext): KotlinDataFetcherFactoryProvider =
         SpringKotlinDataFetcherFactoryProvider(applicationContext)
+
+    @Bean
+    @ConditionalOnMissingBean
+    fun objectMapper(): ObjectMapper = JsonMapper.builder().addModule(KotlinModule.Builder().build()).build()
 
     @Bean
     @ConditionalOnMissingBean

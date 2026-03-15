@@ -28,7 +28,6 @@ import com.expediagroup.graphql.server.spring.execution.DefaultSpringGraphQLCont
 import com.expediagroup.graphql.server.spring.execution.SpringGraphQLContextFactory
 import com.expediagroup.graphql.server.spring.execution.SpringGraphQLRequestParser
 import com.expediagroup.graphql.server.spring.execution.SpringGraphQLServer
-import com.fasterxml.jackson.databind.ObjectMapper
 import graphql.GraphQL
 import graphql.execution.AsyncExecutionStrategy
 import graphql.execution.AsyncSerialExecutionStrategy
@@ -45,6 +44,7 @@ import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Import
 import org.springframework.core.Ordered
 import java.util.Optional
+import tools.jackson.databind.ObjectMapper
 
 /**
  * Default order applied to Instrumentation beans.

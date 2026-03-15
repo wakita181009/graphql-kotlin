@@ -7,9 +7,6 @@ import com.expediagroup.graphql.client.jackson.types.OptionalInput.Defined
 import com.expediagroup.graphql.client.jackson.types.OptionalInput.Undefined
 import com.expediagroup.graphql.plugin.client.generator.ULocaleScalarConverter
 import com.expediagroup.graphql.plugin.client.generator.UUIDScalarConverter
-import com.fasterxml.jackson.core.JsonGenerator
-import com.fasterxml.jackson.databind.JsonSerializer
-import com.fasterxml.jackson.databind.SerializerProvider
 import com.ibm.icu.util.ULocale
 import java.lang.Class
 import java.util.UUID
@@ -17,19 +14,22 @@ import kotlin.Any
 import kotlin.Boolean
 import kotlin.collections.Map
 import kotlin.collections.mapOf
+import tools.jackson.core.JsonGenerator
+import tools.jackson.databind.SerializationContext
+import tools.jackson.databind.ValueSerializer
 
 @Generated
-public class OptionalScalarInputSerializer : JsonSerializer<OptionalInput<*>>() {
+public class OptionalScalarInputSerializer : ValueSerializer<OptionalInput<*>>() {
   private val converters: Map<Class<*>, ScalarConverter<*>> = mapOf(UUID::class.java to
       UUIDScalarConverter(), ULocale::class.java to ULocaleScalarConverter())
 
-  override fun isEmpty(provider: SerializerProvider, `value`: OptionalInput<*>): Boolean = value ==
-      OptionalInput.Undefined
+  override fun isEmpty(provider: SerializationContext, `value`: OptionalInput<*>): Boolean = (value
+      == OptionalInput.Undefined)
 
   override fun serialize(
     `value`: OptionalInput<*>,
     gen: JsonGenerator,
-    serializers: SerializerProvider,
+    serializers: SerializationContext,
   ) {
     when (value) {
       is OptionalInput.Undefined -> return
@@ -53,12 +53,12 @@ public class OptionalScalarInputSerializer : JsonSerializer<OptionalInput<*>>() 
   private fun serializeValue(
     `value`: Any,
     gen: JsonGenerator,
-    serializers: SerializerProvider,
+    serializers: SerializationContext,
   ) {
     val clazz = value::class.java
     val converter = converters[clazz] as? ScalarConverter<Any>
     if (converter != null) {
-      serializers.defaultSerializeValue(converter.toJson(value), gen)
+      serializers.writeValue(gen, converter.toJson(value))
     } else {
       serializers.findValueSerializer(clazz).serialize(value, gen, serializers)
     }

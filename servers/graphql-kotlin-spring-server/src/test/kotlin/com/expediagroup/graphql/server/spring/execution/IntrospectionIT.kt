@@ -23,6 +23,7 @@ import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.boot.webtestclient.autoconfigure.AutoConfigureWebTestClient
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.http.MediaType
@@ -37,6 +38,7 @@ import kotlin.random.Random
     ]
 )
 @EnableAutoConfiguration
+@AutoConfigureWebTestClient
 class IntrospectionIT(@Autowired private val testClient: WebTestClient) {
 
     @Test

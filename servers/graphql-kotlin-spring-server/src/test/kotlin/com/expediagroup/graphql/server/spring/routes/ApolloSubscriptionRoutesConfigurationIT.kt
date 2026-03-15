@@ -23,15 +23,13 @@ import com.expediagroup.graphql.server.spring.subscriptions.ApolloSubscriptionOp
 import com.expediagroup.graphql.server.spring.subscriptions.ApolloSubscriptionOperationMessage.ClientMessages
 import com.expediagroup.graphql.server.spring.subscriptions.ApolloSubscriptionOperationMessage.ServerMessages
 import com.expediagroup.graphql.server.types.GraphQLRequest
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import com.fasterxml.jackson.module.kotlin.readValue
-import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Timeout
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.web.server.LocalServerPort
+import org.springframework.boot.webtestclient.autoconfigure.AutoConfigureWebTestClient
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.http.MediaType
@@ -42,6 +40,9 @@ import reactor.kotlin.core.publisher.toMono
 import reactor.test.StepVerifier
 import reactor.test.publisher.TestPublisher
 import java.net.URI
+import tools.jackson.databind.json.JsonMapper
+import tools.jackson.module.kotlin.KotlinModule
+import tools.jackson.module.kotlin.readValue
 
 @Deprecated("this class tests deprecated subscriptions-transport-ws protocol")
 @SpringBootTest(
@@ -54,12 +55,13 @@ import java.net.URI
     ]
 )
 @EnableAutoConfiguration
+@AutoConfigureWebTestClient
 class ApolloSubscriptionRoutesConfigurationIT(
     @Autowired private val testClient: WebTestClient,
     @LocalServerPort private var port: Int
 ) {
 
-    val objectMapper = jacksonObjectMapper().registerKotlinModule()
+    val objectMapper = JsonMapper.builder().addModule(KotlinModule.Builder().build()).build()
 
     @Configuration
     class TestConfiguration {
