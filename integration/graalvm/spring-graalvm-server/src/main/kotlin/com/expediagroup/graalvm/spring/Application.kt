@@ -103,11 +103,8 @@ class Application {
     // mutations
     @Bean
     fun basicMutation() = BasicMutation()
+}
 
-    companion object {
-        @JvmStatic
-        fun main(args: Array<String>) {
-            runApplication<Application>(*args)
-        }
-    }
+fun main(args: Array<String>) {
+    runApplication<Application>(*args)
 }
