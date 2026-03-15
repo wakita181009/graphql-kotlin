@@ -130,6 +130,15 @@
     ]
   },
   {
+    "name": "com.expediagroup.graphql.server.types.Jackson2GraphQLServerRequestDeserializer",
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
     "name": "com.expediagroup.graphql.server.types.GraphQLServerResponse",
     "allDeclaredFields": true,
     "queryAllDeclaredMethods": true
