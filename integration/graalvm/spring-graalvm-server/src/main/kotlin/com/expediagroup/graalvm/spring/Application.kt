@@ -40,11 +40,10 @@ import com.expediagroup.graalvm.schema.model.SecondUnionMember
 import com.expediagroup.graphql.dataloader.KotlinDataLoaderRegistryFactory
 import com.expediagroup.graphql.generator.GraphQLTypeResolver
 import com.expediagroup.graphql.generator.SimpleTypeResolver
-import org.springframework.boot.autoconfigure.SpringBootApplication
-import org.springframework.boot.runApplication
 import org.springframework.context.annotation.Bean
+import org.springframework.context.annotation.Configuration
 
-@SpringBootApplication
+@Configuration
 class Application {
 
     @Bean
@@ -103,8 +102,4 @@ class Application {
     // mutations
     @Bean
     fun basicMutation() = BasicMutation()
-}
-
-fun main(args: Array<String>) {
-    runApplication<Application>(*args)
 }
