@@ -69,7 +69,6 @@ class GraphQLSyncExecutionExhaustedDataLoaderDispatcherTest {
 
         assertEquals(1, missionStatistics?.batchInvokeCount)
         assertEquals(2, missionStatistics?.batchLoadCount)
-
     }
 
     @Test
@@ -97,7 +96,6 @@ class GraphQLSyncExecutionExhaustedDataLoaderDispatcherTest {
 
         assertEquals(1, missionStatistics?.batchInvokeCount)
         assertEquals(2, missionStatistics?.batchLoadCount)
-
     }
 
     @Test
@@ -136,7 +134,6 @@ class GraphQLSyncExecutionExhaustedDataLoaderDispatcherTest {
         assertEquals(1, missionsByAstronautStatistics?.batchInvokeCount)
         // Level 2 and 3
         assertEquals(2, missionsByAstronautStatistics?.batchLoadCount)
-
     }
 
     @Test
@@ -170,7 +167,6 @@ class GraphQLSyncExecutionExhaustedDataLoaderDispatcherTest {
 
         assertEquals(1, missionsByAstronautStatistics?.batchInvokeCount)
         assertEquals(3, missionsByAstronautStatistics?.batchLoadCount)
-
     }
 
     @Test
@@ -205,7 +201,6 @@ class GraphQLSyncExecutionExhaustedDataLoaderDispatcherTest {
 
         assertEquals(1, missionsByAstronautStatistics?.batchInvokeCount)
         assertEquals(2, missionsByAstronautStatistics?.batchLoadCount)
-
     }
 
     @Test
@@ -257,7 +252,6 @@ class GraphQLSyncExecutionExhaustedDataLoaderDispatcherTest {
 
         assertEquals(1, missionsByAstronautStatistics?.batchInvokeCount)
         assertEquals(3, missionsByAstronautStatistics?.batchLoadCount)
-
     }
 
     @Test
@@ -300,7 +294,6 @@ class GraphQLSyncExecutionExhaustedDataLoaderDispatcherTest {
 
         assertEquals(1, missionsByAstronautStatistics?.batchInvokeCount)
         assertEquals(3, missionsByAstronautStatistics?.batchLoadCount)
-
     }
 
     @Test
