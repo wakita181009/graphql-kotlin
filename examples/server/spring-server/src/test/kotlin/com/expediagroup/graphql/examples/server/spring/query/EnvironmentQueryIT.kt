@@ -28,7 +28,7 @@ import org.springframework.boot.webtestclient.autoconfigure.AutoConfigureWebTest
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.http.MediaType.APPLICATION_JSON
 import org.springframework.test.web.reactive.server.WebTestClient
-import kotlin.test.assertNull
+import org.hamcrest.Matchers.nullValue
 
 @SpringBootTest
 @AutoConfigureWebTestClient
@@ -47,10 +47,7 @@ class EnvironmentQueryIT(@Autowired private val testClient: WebTestClient) {
             .exchange()
             .expectStatus().isOk
             .verifyOnlyDataExists(query)
-            .jsonPath("$DATA_JSON_PATH.$query.parentValue").value<String?> {
-                // workaround to NULLABILITY_MISMATCH_BASED_ON_JAVA_ANNOTATIONS issue - when using jsonPath().isEqualTo() currently cannot pass null
-                assertNull(it)
-            }
+            .jsonPath("$DATA_JSON_PATH.$query.parentValue").value(nullValue())
             .jsonPath("$DATA_JSON_PATH.$query.value").isEqualTo("1")
             .jsonPath("$DATA_JSON_PATH.$query.nested").exists()
             .jsonPath("$DATA_JSON_PATH.$query.nested.parentValue").isEqualTo("1")
