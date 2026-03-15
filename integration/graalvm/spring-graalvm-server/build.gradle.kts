@@ -28,6 +28,7 @@ graalvmNative {
     binaries {
         named("main") {
             verbose.set(true)
+            buildArgs.add("-H:+ReportExceptionStackTraces")
             jvmArgs("-Xmx6g")
         }
         metadataRepository {
