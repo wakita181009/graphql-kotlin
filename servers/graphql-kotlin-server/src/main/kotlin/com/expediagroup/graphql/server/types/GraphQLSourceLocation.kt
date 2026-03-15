@@ -16,14 +16,11 @@
 
 package com.expediagroup.graphql.server.types
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties
-
 /**
  * Location describing which part of GraphQL document caused an exception.
  *
  * @see [GraphQL Specification](http://spec.graphql.org/June2018/#sec-Errors) for additional details
  */
-@JsonIgnoreProperties(ignoreUnknown = true)
 data class GraphQLSourceLocation(
     val line: Int,
     val column: Int

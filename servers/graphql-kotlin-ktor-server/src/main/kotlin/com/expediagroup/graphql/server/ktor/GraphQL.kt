@@ -32,8 +32,8 @@ import com.expediagroup.graphql.generator.federation.FederatedSimpleTypeResolver
 import com.expediagroup.graphql.generator.federation.toFederatedSchema
 import com.expediagroup.graphql.generator.internal.state.ClassScanner
 import com.expediagroup.graphql.server.execution.GraphQLRequestHandler
+import com.expediagroup.graphql.server.jackson.serialization.JacksonGraphQLSerializer
 import com.expediagroup.graphql.server.ktor.subscriptions.KtorGraphQLWebSocketServer
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import graphql.execution.AsyncExecutionStrategy
 import graphql.execution.AsyncSerialExecutionStrategy
 import graphql.execution.instrumentation.ChainedInstrumentation
@@ -169,7 +169,9 @@ class GraphQL(config: GraphQLConfiguration) {
             subscriptionHooks = config.server.subscriptions.hooks,
             requestHandler = requestHandler,
             initTimeoutMillis = config.server.subscriptions.connectionInitTimeout,
-            objectMapper = jacksonObjectMapper().apply(config.server.jacksonConfiguration)
+            serializer = JacksonGraphQLSerializer(
+                JacksonGraphQLSerializer.defaultObjectMapper().apply(config.server.jacksonConfiguration)
+            )
         )
     }
 

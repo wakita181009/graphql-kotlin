@@ -8,6 +8,7 @@ dependencies {
     implementation(projects.graphqlKotlinHooksProvider)
     implementation(projects.graphqlKotlinServer)
     implementation(projects.graphqlKotlinFederation)
+    implementation(libs.jackson)
     implementation(libs.classgraph)
     implementation(libs.slf4j)
 }

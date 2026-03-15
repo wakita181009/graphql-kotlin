@@ -35,8 +35,8 @@ import com.expediagroup.graphql.server.ktor.subscriptions.KtorGraphQLSubscriptio
 import com.expediagroup.graphql.server.operations.Mutation
 import com.expediagroup.graphql.server.operations.Query
 import com.expediagroup.graphql.server.operations.Subscription
+import com.expediagroup.graphql.server.jackson.serialization.JacksonGraphQLSerializer
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import graphql.execution.DataFetcherExceptionHandler
 import graphql.execution.ExecutionIdProvider
 import graphql.execution.SimpleDataFetcherExceptionHandler
@@ -266,7 +266,7 @@ class GraphQLConfiguration(config: ApplicationConfig) {
         /** Custom Jackson ObjectMapper configuration */
         var jacksonConfiguration: ObjectMapper.() -> Unit = {}
         /** Custom request parser */
-        var requestParser: KtorGraphQLRequestParser = KtorGraphQLRequestParser(jacksonObjectMapper().apply(jacksonConfiguration))
+        var requestParser: KtorGraphQLRequestParser = KtorGraphQLRequestParser(JacksonGraphQLSerializer.defaultObjectMapper().apply(jacksonConfiguration))
         /** GraphQL WS subscription configuration */
         val subscriptions: KtorSubscriptionConfiguration = KtorSubscriptionConfiguration(config)
         fun subscriptions(subscriptionConfig: KtorSubscriptionConfiguration.() -> Unit) {

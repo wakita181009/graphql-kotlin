@@ -17,8 +17,8 @@
 package com.expediagroup.graphql.server.spring.subscriptions
 
 import com.expediagroup.graphql.server.execution.subscription.GRAPHQL_WS_PROTOCOL
+import com.expediagroup.graphql.server.jackson.serialization.JacksonGraphQLSerializer
 import com.expediagroup.graphql.server.types.GraphQLSubscriptionStatus
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import io.mockk.every
 import io.mockk.mockk
 import org.junit.jupiter.api.Test
@@ -38,13 +38,13 @@ class SubscriptionWebSocketHandlerTest {
 
     @Test
     fun `verify default subscription handler supports graphql-transport-ws subprotocol`() {
-        val handler = SubscriptionWebSocketHandler(mockk(), mockk(), mockk(), mockk(), 1_000, jacksonObjectMapper())
+        val handler = SubscriptionWebSocketHandler(mockk(), mockk(), mockk(), mockk(), 1_000, JacksonGraphQLSerializer())
         assertEquals(expected = listOf(GRAPHQL_WS_PROTOCOL), actual = handler.subProtocols)
     }
 
     @Test
     fun `verify default subscription handler handles init timeout gracefully`() = runTest {
-        val handler = SubscriptionWebSocketHandler(mockk(), mockk(), mockk(), mockk(), 1_000, jacksonObjectMapper())
+        val handler = SubscriptionWebSocketHandler(mockk(), mockk(), mockk(), mockk(), 1_000, JacksonGraphQLSerializer())
         val session = mockk<WebSocketSession>()
 
         every { session.close(any()) } returns Mono.empty()

@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Expedia, Inc
+ * Copyright 2026 Expedia, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,16 +14,14 @@
  * limitations under the License.
  */
 
-package com.expediagroup.graphql.server.types
+package com.expediagroup.graphql.server.jackson.fastjson
 
-/**
- * GraphQL error representation that is spec complaint with serialization and deserialization.
- *
- * @see [GraphQL Specification](http://spec.graphql.org/June2018/#sec-Errors) for additional details
- */
-data class GraphQLServerError(
-    val message: String,
-    val locations: List<GraphQLSourceLocation>? = null,
-    val path: List<Any>? = null,
-    val extensions: Map<String, Any?>? = null
-)
+import com.alibaba.fastjson2.JSONReader
+
+inline fun <reified T> JSONReader.readAsArray(): List<T> {
+    val collector = mutableListOf<T>()
+    readArray(collector, T::class.java)
+    return collector
+}
+
+inline fun <reified T> JSONReader.readAs(): T = read(T::class.java)

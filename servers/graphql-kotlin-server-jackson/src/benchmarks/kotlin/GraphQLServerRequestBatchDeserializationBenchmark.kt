@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-package com.expediagroup.graphql.server
+package com.expediagroup.graphql.server.jackson
 
 import com.alibaba.fastjson2.JSON
 import com.alibaba.fastjson2.JSONWriter
 import com.alibaba.fastjson2.to
+import com.expediagroup.graphql.server.jackson.serialization.JacksonGraphQLSerializer
 import com.expediagroup.graphql.server.types.GraphQLServerRequest
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import org.openjdk.jmh.annotations.Benchmark
 import org.openjdk.jmh.annotations.Fork
@@ -36,7 +36,7 @@ import java.util.concurrent.TimeUnit
 @Warmup(iterations = 1, time = 1, timeUnit = TimeUnit.SECONDS)
 @Measurement(iterations = 4, time = 5, timeUnit = TimeUnit.SECONDS)
 open class GraphQLServerRequestBatchDeserializationBenchmark {
-    private val mapper = jacksonObjectMapper()
+    private val mapper = JacksonGraphQLSerializer.defaultObjectMapper()
     private lateinit var batchRequest: String
 
     @Setup

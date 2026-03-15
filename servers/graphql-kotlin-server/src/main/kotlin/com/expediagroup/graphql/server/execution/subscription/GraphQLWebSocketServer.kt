@@ -19,6 +19,8 @@ package com.expediagroup.graphql.server.execution.subscription
 import com.expediagroup.graphql.generator.extensions.get
 import com.expediagroup.graphql.generator.extensions.plus
 import com.expediagroup.graphql.server.execution.GraphQLRequestHandler
+import com.expediagroup.graphql.server.serialization.GraphQLSerializer
+import com.expediagroup.graphql.server.serialization.deserialize
 import com.expediagroup.graphql.server.types.GraphQLSubscriptionMessage
 import com.expediagroup.graphql.server.types.GraphQLSubscriptionStatus
 import com.expediagroup.graphql.server.types.SubscriptionMessageComplete
@@ -29,9 +31,6 @@ import com.expediagroup.graphql.server.types.SubscriptionMessageNext
 import com.expediagroup.graphql.server.types.SubscriptionMessagePing
 import com.expediagroup.graphql.server.types.SubscriptionMessagePong
 import com.expediagroup.graphql.server.types.SubscriptionMessageSubscribe
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import com.fasterxml.jackson.module.kotlin.readValue
 import graphql.GraphQLContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.FlowPreview
@@ -66,7 +65,7 @@ abstract class GraphQLWebSocketServer<Session, Message>(
     private val subscriptionHooks: GraphQLSubscriptionHooks<Session>,
     private val requestHandler: GraphQLRequestHandler,
     private val initTimeoutMillis: Long,
-    private val objectMapper: ObjectMapper = jacksonObjectMapper()
+    private val serializer: GraphQLSerializer
 ) {
     private val logger: Logger = LoggerFactory.getLogger(GraphQLWebSocketServer::class.java)
     private val subscriptionScope = CoroutineScope(SupervisorJob())
@@ -84,7 +83,7 @@ abstract class GraphQLWebSocketServer<Session, Message>(
         }
 
         requestParser.parseRequestFlow(session)
-            .map { objectMapper.readValue<GraphQLSubscriptionMessage>(it) }
+            .map { serializer.deserialize<GraphQLSubscriptionMessage>(it) }
             .flatMapMerge { message ->
                 channelFlow {
                     when (message) {
@@ -197,7 +196,7 @@ abstract class GraphQLWebSocketServer<Session, Message>(
                 }
                     .map {
                         logger.debug("Subscription response {}", it)
-                        sendSubscriptionMessage(session, objectMapper.writeValueAsString(it))
+                        sendSubscriptionMessage(session, serializer.serialize(it))
                     }
                     .catch {
                         logger.warn("Error occurred when processing the subscription", it)

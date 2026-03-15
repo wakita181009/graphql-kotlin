@@ -24,6 +24,7 @@ include(":graphql-kotlin-graalvm-metadata-generator")
 
 // Servers
 include(":graphql-kotlin-server")
+include(":graphql-kotlin-server-jackson")
 include(":graphql-kotlin-spring-server")
 include(":graphql-kotlin-ktor-server")
 
@@ -58,6 +59,7 @@ project(":graphql-kotlin-graalvm-metadata-generator").projectDir = file("plugins
 
 // Servers
 project(":graphql-kotlin-server").projectDir = file("servers/graphql-kotlin-server")
+project(":graphql-kotlin-server-jackson").projectDir = file("servers/graphql-kotlin-server-jackson")
 project(":graphql-kotlin-spring-server").projectDir = file("servers/graphql-kotlin-spring-server")
 project(":graphql-kotlin-ktor-server").projectDir = file("servers/graphql-kotlin-ktor-server")
 

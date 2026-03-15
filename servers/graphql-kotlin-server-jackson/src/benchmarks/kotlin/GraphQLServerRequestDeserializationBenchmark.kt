@@ -14,12 +14,13 @@
  * limitations under the License.
  */
 
-package com.expediagroup.graphql.server
+package com.expediagroup.graphql.server.jackson
 
 import com.alibaba.fastjson2.JSON
 import com.alibaba.fastjson2.JSONWriter
-import com.expediagroup.graphql.server.types.GraphQLResponse
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import com.alibaba.fastjson2.to
+import com.expediagroup.graphql.server.jackson.serialization.JacksonGraphQLSerializer
+import com.expediagroup.graphql.server.types.GraphQLServerRequest
 import com.fasterxml.jackson.module.kotlin.readValue
 import org.openjdk.jmh.annotations.Benchmark
 import org.openjdk.jmh.annotations.Fork
@@ -34,23 +35,28 @@ import java.util.concurrent.TimeUnit
 @Fork(value = 5, jvmArgsAppend = ["--add-modules=jdk.incubator.vector"])
 @Warmup(iterations = 1, time = 1, timeUnit = TimeUnit.SECONDS)
 @Measurement(iterations = 4, time = 5, timeUnit = TimeUnit.SECONDS)
-open class GraphQLServerResponseSerializationBenchmark {
-    private val mapper = jacksonObjectMapper()
-    private lateinit var response: GraphQLResponse<Map<String, Any?>>
+open class GraphQLServerRequestDeserializationBenchmark {
+    private val mapper = JacksonGraphQLSerializer.defaultObjectMapper()
+    private lateinit var request: String
 
     @Setup
     fun setUp() {
         JSON.config(JSONWriter.Feature.WriteNulls)
-        response = GraphQLResponse(
-            mapper.readValue<Map<String, Any?>>(
-                this::class.java.classLoader.getResourceAsStream("StarWarsDetailsResponse.json")!!
-            )
-        )
+        val loader = this::class.java.classLoader
+        val operation = loader.getResource("StarWarsDetails.graphql")!!.readText().replace("\n", "\\n")
+        val variables = loader.getResource("StarWarsDetailsVariables.json")!!.readText()
+        request = """
+            {
+                "operationName": "StarWarsDetails",
+                "query": "$operation",
+                "variables": $variables
+            }
+        """.trimIndent()
     }
 
     @Benchmark
-    fun jackson(): String = mapper.writeValueAsString(response)
+    fun jackson(): GraphQLServerRequest = mapper.readValue(request)
 
     @Benchmark
-    fun fastjson2(): String = JSON.toJSONString(response)
+    fun fastjson2(): GraphQLServerRequest = request.to()
 }

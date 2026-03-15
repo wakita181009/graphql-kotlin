@@ -17,6 +17,7 @@
 package com.expediagroup.graphql.server.execution.subscription
 
 import com.expediagroup.graphql.server.execution.GraphQLRequestHandler
+import com.expediagroup.graphql.server.serialization.GraphQLSerializer
 import com.expediagroup.graphql.server.types.GraphQLSubscriptionStatus
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.Channel
@@ -27,12 +28,13 @@ import kotlinx.coroutines.withTimeoutOrNull
 
 class InMemoryGraphQLSubscriptionServer(
     requestHandler: GraphQLRequestHandler,
+    serializer: GraphQLSerializer,
     requestParser: InMemorySubscriptionRequestParser = InMemorySubscriptionRequestParser(),
     contextFactory: InMemorySubscriptionContextFactory = InMemorySubscriptionContextFactory(),
     hooks: InMemorySubscriptionHooks = InMemorySubscriptionHooks(),
     timeoutInMillis: Long = 1000
 ) : GraphQLWebSocketServer<Channel<String>, String>(
-    requestParser, contextFactory, hooks, requestHandler, timeoutInMillis
+    requestParser, contextFactory, hooks, requestHandler, timeoutInMillis, serializer
 ) {
     val outboundChannel = Channel<String>(Channel.BUFFERED)
 

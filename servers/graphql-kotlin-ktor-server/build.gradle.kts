@@ -6,6 +6,7 @@ plugins {
 
 dependencies {
     api(projects.graphqlKotlinServer)
+    api(projects.graphqlKotlinServerJackson)
     api(projects.graphqlKotlinFederation)
     api(libs.ktor.serialization.jackson)
     api(libs.ktor.server.core)

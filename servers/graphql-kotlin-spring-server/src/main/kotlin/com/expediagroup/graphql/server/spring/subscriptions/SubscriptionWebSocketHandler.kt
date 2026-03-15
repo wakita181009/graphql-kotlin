@@ -19,8 +19,8 @@ package com.expediagroup.graphql.server.spring.subscriptions
 import com.expediagroup.graphql.server.execution.GraphQLRequestHandler
 import com.expediagroup.graphql.server.execution.subscription.GRAPHQL_WS_PROTOCOL
 import com.expediagroup.graphql.server.execution.subscription.GraphQLWebSocketServer
+import com.expediagroup.graphql.server.serialization.GraphQLSerializer
 import com.expediagroup.graphql.server.types.GraphQLSubscriptionStatus
-import com.fasterxml.jackson.databind.ObjectMapper
 import kotlinx.coroutines.reactive.awaitFirstOrNull
 import kotlinx.coroutines.reactor.flux
 import org.springframework.web.reactive.socket.CloseStatus
@@ -40,9 +40,9 @@ class SubscriptionWebSocketHandler(
     subscriptionHooks: SpringGraphQLSubscriptionHooks,
     graphqlHandler: GraphQLRequestHandler,
     initTimeoutMillis: Long,
-    objectMapper: ObjectMapper
+    serializer: GraphQLSerializer
 ) : WebSocketHandler, GraphQLWebSocketServer<WebSocketSession, WebSocketMessage>(
-    requestParser, contextFactory, subscriptionHooks, graphqlHandler, initTimeoutMillis, objectMapper
+    requestParser, contextFactory, subscriptionHooks, graphqlHandler, initTimeoutMillis, serializer
 ) {
     override fun handle(session: WebSocketSession): Mono<Void> = session.send(
         flux {

@@ -16,37 +16,14 @@
 
 package com.expediagroup.graphql.server.types
 
-import com.alibaba.fastjson2.JSONReader
-import com.alibaba.fastjson2.annotation.JSONType
-import com.alibaba.fastjson2.reader.ObjectReader
-import com.expediagroup.graphql.server.extensions.readAs
-import com.expediagroup.graphql.server.extensions.readAsArray
-import com.expediagroup.graphql.server.types.serializers.FastJsonIncludeNonNullProperty
-import com.fasterxml.jackson.annotation.JsonCreator
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties
-import com.fasterxml.jackson.annotation.JsonInclude
-import com.fasterxml.jackson.annotation.JsonValue
-import com.fasterxml.jackson.core.JsonParser
-import com.fasterxml.jackson.databind.DeserializationContext
-import com.fasterxml.jackson.databind.JsonDeserializer
-import com.fasterxml.jackson.databind.JsonNode
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize
-import java.lang.reflect.Type
-
 /**
  * GraphQL server request abstraction that provides a convenient way to handle both single and batch requests.
  */
-@JsonDeserialize(using = GraphQLServerRequestDeserializer::class)
-@JSONType(deserializer = FastJsonGraphQLServerRequestDeserializer::class)
 sealed class GraphQLServerRequest
 
 /**
  * Wrapper that holds single GraphQLRequest to be processed within an HTTP request.
  */
-@JsonIgnoreProperties(ignoreUnknown = true)
-@JsonInclude(JsonInclude.Include.NON_NULL)
-@JsonDeserialize(using = JsonDeserializer.None::class)
-@JSONType(serializeFilters = [FastJsonIncludeNonNullProperty::class])
 data class GraphQLRequest(
     val query: String = "",
     val operationName: String? = null,
@@ -57,37 +34,6 @@ data class GraphQLRequest(
 /**
  * Wrapper that holds list of GraphQLRequests to be processed together within a single HTTP request.
  */
-@JsonIgnoreProperties(ignoreUnknown = true)
-@JsonInclude(JsonInclude.Include.NON_NULL)
-@JsonDeserialize(using = JsonDeserializer.None::class)
-data class GraphQLBatchRequest @JsonCreator constructor(@get:JsonValue val requests: List<GraphQLRequest>) : GraphQLServerRequest() {
+data class GraphQLBatchRequest(val requests: List<GraphQLRequest>) : GraphQLServerRequest() {
     constructor(vararg requests: GraphQLRequest) : this(requests.toList())
-}
-
-class GraphQLServerRequestDeserializer : JsonDeserializer<GraphQLServerRequest>() {
-    override fun deserialize(parser: JsonParser, ctxt: DeserializationContext): GraphQLServerRequest {
-        val codec = parser.codec
-        val jsonNode = codec.readTree<JsonNode>(parser)
-        return if (jsonNode.isArray) {
-            codec.treeToValue(jsonNode, GraphQLBatchRequest::class.java)
-        } else {
-            codec.treeToValue(jsonNode, GraphQLRequest::class.java)
-        }
-    }
-}
-
-object FastJsonGraphQLServerRequestDeserializer : ObjectReader<GraphQLServerRequest> {
-    override fun readObject(
-        jsonReader: JSONReader?,
-        fieldType: Type?,
-        fieldName: Any?,
-        features: Long
-    ): GraphQLServerRequest? {
-        if (jsonReader == null || jsonReader.nextIfNull()) return null
-        return if (jsonReader.isArray) {
-            GraphQLBatchRequest(jsonReader.readAsArray<GraphQLRequest>())
-        } else {
-            jsonReader.readAs<GraphQLRequest>()
-        }
-    }
 }

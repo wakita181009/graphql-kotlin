@@ -1,6 +1,6 @@
 import kotlinx.benchmark.gradle.JvmBenchmarkTarget
 
-description = "Common code for running a GraphQL server in any HTTP server framework"
+description = "Jackson serialization support for graphql-kotlin server"
 
 plugins {
     id("com.expediagroup.graphql.conventions")
@@ -8,13 +8,10 @@ plugins {
 }
 
 dependencies {
-    api(projects.graphqlKotlinSchemaGenerator)
-    api(projects.graphqlKotlinDataloaderInstrumentation)
-    api(projects.graphqlKotlinAutomaticPersistedQueries)
-    implementation(libs.slf4j)
-    testImplementation(projects.graphqlKotlinServerJackson)
+    api(projects.graphqlKotlinServer)
+    api(libs.jackson)
+    api(libs.fastjson2)
     testImplementation(libs.kotlinx.coroutines.test)
-    testImplementation(libs.logback)
 }
 
 // Benchmarks
@@ -31,6 +28,14 @@ kotlin.sourceSets.getByName("benchmarks") {
 }
 
 benchmark {
+    configurations {
+        register("graphQLRequest") {
+            include("com.expediagroup.graphql.server.jackson.GraphQLServerRequest*")
+        }
+        register("graphQLResponse") {
+            include("com.expediagroup.graphql.server.jackson.GraphQLServerResponse*")
+        }
+    }
     targets {
         register("benchmarks") {
             this as JvmBenchmarkTarget
@@ -42,16 +47,15 @@ tasks {
     jacocoTestCoverageVerification {
         violationRules {
             rule {
-                excludes = listOf("com.expediagroup.graphql.server.testtypes.*")
                 limit {
                     counter = "INSTRUCTION"
                     value = "COVEREDRATIO"
-                    minimum = "0.81".toBigDecimal()
+                    minimum = "0.80".toBigDecimal()
                 }
                 limit {
                     counter = "BRANCH"
                     value = "COVEREDRATIO"
-                    minimum = "0.65".toBigDecimal()
+                    minimum = "0.60".toBigDecimal()
                 }
             }
         }

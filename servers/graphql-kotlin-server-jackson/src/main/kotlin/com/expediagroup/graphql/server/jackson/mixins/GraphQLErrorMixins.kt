@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Expedia, Inc
+ * Copyright 2026 Expedia, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,16 +14,14 @@
  * limitations under the License.
  */
 
-package com.expediagroup.graphql.server.types
+package com.expediagroup.graphql.server.jackson.mixins
 
-/**
- * GraphQL error representation that is spec complaint with serialization and deserialization.
- *
- * @see [GraphQL Specification](http://spec.graphql.org/June2018/#sec-Errors) for additional details
- */
-data class GraphQLServerError(
-    val message: String,
-    val locations: List<GraphQLSourceLocation>? = null,
-    val path: List<Any>? = null,
-    val extensions: Map<String, Any?>? = null
-)
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties
+import com.fasterxml.jackson.annotation.JsonInclude
+
+@JsonIgnoreProperties(ignoreUnknown = true)
+@JsonInclude(JsonInclude.Include.NON_NULL)
+internal abstract class GraphQLServerErrorMixin
+
+@JsonIgnoreProperties(ignoreUnknown = true)
+internal abstract class GraphQLSourceLocationMixin

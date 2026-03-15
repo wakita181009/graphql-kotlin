@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Expedia, Inc
+ * Copyright 2026 Expedia, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,18 +14,20 @@
  * limitations under the License.
  */
 
-package com.expediagroup.graphql.server.types
+package com.expediagroup.graphql.server.jackson.types
 
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import com.expediagroup.graphql.server.jackson.serialization.JacksonGraphQLSerializer
+import com.expediagroup.graphql.server.types.GraphQLServerError
+import com.expediagroup.graphql.server.types.GraphQLSourceLocation
 import com.fasterxml.jackson.module.kotlin.readValue
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 
-class GraphQLErrorTest {
+class GraphQLErrorSerializationTest {
 
-    private val mapper = jacksonObjectMapper()
+    private val mapper = JacksonGraphQLSerializer.defaultObjectMapper()
 
     @Test
     fun `Simple error is spec compliant with serialization`() {

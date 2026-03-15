@@ -17,6 +17,8 @@
 package com.expediagroup.graphql.server.spring
 
 import com.expediagroup.graphql.server.execution.GraphQLRequestHandler
+import com.expediagroup.graphql.server.jackson.serialization.JacksonGraphQLSerializer
+import com.expediagroup.graphql.server.serialization.GraphQLSerializer
 import com.expediagroup.graphql.server.spring.subscriptions.DefaultSpringGraphQLSubscriptionHooks
 import com.expediagroup.graphql.server.spring.subscriptions.DefaultSpringSubscriptionGraphQLContextFactory
 import com.expediagroup.graphql.server.spring.subscriptions.SpringGraphQLSubscriptionHooks
@@ -50,12 +52,16 @@ class SubscriptionGraphQLWsAutoConfiguration {
     fun subscriptionHooks(): SpringGraphQLSubscriptionHooks = DefaultSpringGraphQLSubscriptionHooks()
 
     @Bean
+    @ConditionalOnMissingBean
+    fun graphQLSerializer(objectMapper: ObjectMapper): GraphQLSerializer = JacksonGraphQLSerializer(objectMapper)
+
+    @Bean
     fun webSocketHandler(
         subscriptionRequestParser: SpringGraphQLSubscriptionRequestParser,
         subscriptionContextFactory: SpringSubscriptionGraphQLContextFactory,
         subscriptionHooks: SpringGraphQLSubscriptionHooks,
         handler: GraphQLRequestHandler,
-        objectMapper: ObjectMapper,
+        graphQLSerializer: GraphQLSerializer,
         config: GraphQLConfigurationProperties
     ) = SubscriptionWebSocketHandler(
         subscriptionRequestParser,
@@ -63,6 +69,6 @@ class SubscriptionGraphQLWsAutoConfiguration {
         subscriptionHooks,
         handler,
         config.subscriptions.connectionInitTimeout,
-        objectMapper
+        graphQLSerializer
     )
 }

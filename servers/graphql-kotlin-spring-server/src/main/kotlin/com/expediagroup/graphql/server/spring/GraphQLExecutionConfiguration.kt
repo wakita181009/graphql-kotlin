@@ -19,6 +19,7 @@ package com.expediagroup.graphql.server.spring
 import com.expediagroup.graphql.dataloader.KotlinDataLoader
 import com.expediagroup.graphql.dataloader.KotlinDataLoaderRegistryFactory
 import com.expediagroup.graphql.generator.execution.KotlinDataFetcherFactoryProvider
+import com.expediagroup.graphql.server.jackson.serialization.GraphQLKotlinJacksonModule
 import com.expediagroup.graphql.server.spring.execution.SpringKotlinDataFetcherFactoryProvider
 import graphql.execution.DataFetcherExceptionHandler
 import graphql.execution.SimpleDataFetcherExceptionHandler
@@ -47,6 +48,10 @@ class GraphQLExecutionConfiguration {
     @Bean
     @ConditionalOnMissingBean
     fun exceptionHandler(): DataFetcherExceptionHandler = SimpleDataFetcherExceptionHandler()
+
+    @Bean
+    @ConditionalOnMissingBean
+    fun graphQLKotlinJacksonModule(): GraphQLKotlinJacksonModule = GraphQLKotlinJacksonModule()
 
     @Bean
     @ConditionalOnMissingBean

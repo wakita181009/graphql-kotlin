@@ -22,6 +22,9 @@ import com.expediagroup.graphql.generator.execution.FlowSubscriptionExecutionStr
 import com.expediagroup.graphql.generator.hooks.FlowSubscriptionSchemaGeneratorHooks
 import com.expediagroup.graphql.generator.toSchema
 import com.expediagroup.graphql.server.execution.GraphQLRequestHandler
+import com.expediagroup.graphql.server.jackson.serialization.JacksonGraphQLSerializer
+import com.expediagroup.graphql.server.serialization.GraphQLSerializer
+import com.expediagroup.graphql.server.serialization.deserialize
 import com.expediagroup.graphql.server.types.GRAPHQL_WS_CONNECTION_ACK
 import com.expediagroup.graphql.server.types.GraphQLRequest
 import com.expediagroup.graphql.server.types.GraphQLSubscriptionMessage
@@ -33,8 +36,6 @@ import com.expediagroup.graphql.server.types.SubscriptionMessageNext
 import com.expediagroup.graphql.server.types.SubscriptionMessagePing
 import com.expediagroup.graphql.server.types.SubscriptionMessagePong
 import com.expediagroup.graphql.server.types.SubscriptionMessageSubscribe
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import com.fasterxml.jackson.module.kotlin.readValue
 import graphql.GraphQL
 import io.mockk.coEvery
 import io.mockk.coVerify
@@ -55,12 +56,12 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
 class GraphQLWebSocketServerTest {
-    private val mapper = jacksonObjectMapper()
+    private val serializer: GraphQLSerializer = JacksonGraphQLSerializer()
 
     @Test
     fun `verify graphql-ws subscription protocol`() = runTest {
         val handler = GraphQLRequestHandler(graphQL = testGraphQLEngine())
-        val testServer = InMemoryGraphQLSubscriptionServer(requestHandler = handler)
+        val testServer = InMemoryGraphQLSubscriptionServer(requestHandler = handler, serializer = serializer)
 
         val session = Channel<String>()
         val responseChannel = testServer.outboundChannel
@@ -70,17 +71,17 @@ class GraphQLWebSocketServerTest {
                 .collect()
         }
 
-        session.send(mapper.writeValueAsString(SubscriptionMessageConnectionInit()))
-        val ack: GraphQLSubscriptionMessage = mapper.readValue(responseChannel.receive())
+        session.send(serializer.serialize(SubscriptionMessageConnectionInit()))
+        val ack: GraphQLSubscriptionMessage = serializer.deserialize(responseChannel.receive())
         assertEquals(GRAPHQL_WS_CONNECTION_ACK, ack.type)
 
         val id = UUID.randomUUID().toString()
         val request = GraphQLRequest(query = "subscription { counter }")
         val subscriptionOperation = SubscriptionMessageSubscribe(id = id, payload = request)
-        session.send(mapper.writeValueAsString(subscriptionOperation))
+        session.send(serializer.serialize(subscriptionOperation))
 
         for (i in 1..3) {
-            val response: GraphQLSubscriptionMessage = mapper.readValue(responseChannel.receive())
+            val response: GraphQLSubscriptionMessage = serializer.deserialize(responseChannel.receive())
             assertTrue(response is SubscriptionMessageNext)
             assertEquals(id, response.id)
             val data = response.payload.data as? Map<*, *>
@@ -88,7 +89,7 @@ class GraphQLWebSocketServerTest {
             assertEquals(i, data["counter"])
         }
 
-        assertEquals(SubscriptionMessageComplete(id), mapper.readValue<GraphQLSubscriptionMessage>(responseChannel.receive()))
+        assertEquals(SubscriptionMessageComplete(id), serializer.deserialize<GraphQLSubscriptionMessage>(responseChannel.receive()))
         subscriptionJob.cancelAndJoin()
     }
 
@@ -97,6 +98,7 @@ class GraphQLWebSocketServerTest {
         val handler = GraphQLRequestHandler(graphQL = testGraphQLEngine())
         val testServer = InMemoryGraphQLSubscriptionServer(
             requestHandler = handler,
+            serializer = serializer,
             timeoutInMillis = 100
         )
 
@@ -110,14 +112,14 @@ class GraphQLWebSocketServerTest {
         val timeout = responseChannel.receive()
         delay(300)
 
-        assertEquals(GraphQLSubscriptionStatus.CONNECTION_INIT_TIMEOUT, mapper.readValue<GraphQLSubscriptionStatus>(timeout))
+        assertEquals(GraphQLSubscriptionStatus.CONNECTION_INIT_TIMEOUT, serializer.deserialize<GraphQLSubscriptionStatus>(timeout))
         subscriptionJob.cancelAndJoin()
     }
 
     @Test
     fun `verify same session cannot init multiple connections`() = runTest {
         val handler = GraphQLRequestHandler(graphQL = testGraphQLEngine())
-        val testServer = InMemoryGraphQLSubscriptionServer(requestHandler = handler)
+        val testServer = InMemoryGraphQLSubscriptionServer(requestHandler = handler, serializer = serializer)
 
         val session = Channel<String>()
         val responseChannel = testServer.outboundChannel
@@ -127,12 +129,12 @@ class GraphQLWebSocketServerTest {
                 .collect()
         }
 
-        session.send(mapper.writeValueAsString(SubscriptionMessageConnectionInit()))
-        val ack: GraphQLSubscriptionMessage = mapper.readValue(responseChannel.receive())
+        session.send(serializer.serialize(SubscriptionMessageConnectionInit()))
+        val ack: GraphQLSubscriptionMessage = serializer.deserialize(responseChannel.receive())
         assertEquals(GRAPHQL_WS_CONNECTION_ACK, ack.type)
 
-        session.send(mapper.writeValueAsString(SubscriptionMessageConnectionInit()))
-        val error: GraphQLSubscriptionStatus = mapper.readValue(responseChannel.receive())
+        session.send(serializer.serialize(SubscriptionMessageConnectionInit()))
+        val error: GraphQLSubscriptionStatus = serializer.deserialize(responseChannel.receive())
         assertEquals(GraphQLSubscriptionStatus.TOO_MANY_REQUESTS, error)
         subscriptionJob.cancelAndJoin()
 
@@ -144,6 +146,7 @@ class GraphQLWebSocketServerTest {
         val handler = GraphQLRequestHandler(graphQL = testGraphQLEngine())
         val testServer = InMemoryGraphQLSubscriptionServer(
             requestHandler = handler,
+            serializer = serializer,
             hooks = spyk(InMemorySubscriptionHooks()) {
                 coEvery { onConnect(any(), any(), any()) } throws IllegalStateException("unauthorized")
             }
@@ -157,8 +160,8 @@ class GraphQLWebSocketServerTest {
                 .collect()
         }
 
-        session.send(mapper.writeValueAsString(SubscriptionMessageConnectionInit()))
-        val error: GraphQLSubscriptionStatus = mapper.readValue(responseChannel.receive())
+        session.send(serializer.serialize(SubscriptionMessageConnectionInit()))
+        val error: GraphQLSubscriptionStatus = serializer.deserialize(responseChannel.receive())
         assertEquals(GraphQLSubscriptionStatus.FORBIDDEN, error)
         subscriptionJob.cancelAndJoin()
     }
@@ -168,6 +171,7 @@ class GraphQLWebSocketServerTest {
         val handler = GraphQLRequestHandler(graphQL = testGraphQLEngine())
         val testServer = InMemoryGraphQLSubscriptionServer(
             requestHandler = handler,
+            serializer = serializer,
             hooks = spyk(InMemorySubscriptionHooks()) {
                 coEvery { onConnect(any(), any(), any()) } throws IllegalStateException("unauthorized")
             }
@@ -182,14 +186,14 @@ class GraphQLWebSocketServerTest {
         }
 
         session.send(
-            mapper.writeValueAsString(
+            serializer.serialize(
                 SubscriptionMessageSubscribe(
                     id = UUID.randomUUID().toString(),
                     payload = GraphQLRequest(query = "subscription { counter }")
                 )
             )
         )
-        val error: GraphQLSubscriptionStatus = mapper.readValue(responseChannel.receive())
+        val error: GraphQLSubscriptionStatus = serializer.deserialize(responseChannel.receive())
         assertEquals(GraphQLSubscriptionStatus.UNAUTHORIZED, error)
         subscriptionJob.cancelAndJoin()
     }
@@ -197,7 +201,7 @@ class GraphQLWebSocketServerTest {
     @Test
     fun `verify cannot start same subscription twice`() = runTest {
         val handler = GraphQLRequestHandler(graphQL = testGraphQLEngine())
-        val testServer = InMemoryGraphQLSubscriptionServer(requestHandler = handler)
+        val testServer = InMemoryGraphQLSubscriptionServer(requestHandler = handler, serializer = serializer)
 
         val session = Channel<String>(Channel.BUFFERED)
         val responseChannel = testServer.outboundChannel
@@ -207,17 +211,17 @@ class GraphQLWebSocketServerTest {
                 .collect()
         }
 
-        session.send(mapper.writeValueAsString(SubscriptionMessageConnectionInit()))
-        val ack: GraphQLSubscriptionMessage = mapper.readValue(responseChannel.receive())
+        session.send(serializer.serialize(SubscriptionMessageConnectionInit()))
+        val ack: GraphQLSubscriptionMessage = serializer.deserialize(responseChannel.receive())
         assertEquals(GRAPHQL_WS_CONNECTION_ACK, ack.type)
 
         val id = UUID.randomUUID().toString()
         val subscriptionOperation = SubscriptionMessageSubscribe(id = id, payload = GraphQLRequest(query = "subscription { counter }"))
-        session.send(mapper.writeValueAsString(subscriptionOperation))
+        session.send(serializer.serialize(subscriptionOperation))
         delay(50)
-        session.send(mapper.writeValueAsString(subscriptionOperation))
+        session.send(serializer.serialize(subscriptionOperation))
 
-        val error: GraphQLSubscriptionStatus = mapper.readValue(responseChannel.receive())
+        val error: GraphQLSubscriptionStatus = serializer.deserialize(responseChannel.receive())
         assertEquals(4409, error.code)
         assertEquals("Subscriber for $id already exists", error.reason)
         subscriptionJob.cancelAndJoin()
@@ -226,7 +230,7 @@ class GraphQLWebSocketServerTest {
     @Test
     fun `verify ping-pong messages`() = runTest {
         val handler = GraphQLRequestHandler(graphQL = testGraphQLEngine())
-        val testServer = InMemoryGraphQLSubscriptionServer(requestHandler = handler)
+        val testServer = InMemoryGraphQLSubscriptionServer(requestHandler = handler, serializer = serializer)
 
         val session = Channel<String>()
         val responseChannel = testServer.outboundChannel
@@ -236,8 +240,8 @@ class GraphQLWebSocketServerTest {
                 .collect()
         }
 
-        session.send(mapper.writeValueAsString(SubscriptionMessagePing()))
-        val pong: GraphQLSubscriptionMessage = mapper.readValue(responseChannel.receive())
+        session.send(serializer.serialize(SubscriptionMessagePing()))
+        val pong: GraphQLSubscriptionMessage = serializer.deserialize(responseChannel.receive())
         assertEquals(SubscriptionMessagePong(), pong)
         subscriptionJob.cancelAndJoin()
     }
@@ -248,6 +252,7 @@ class GraphQLWebSocketServerTest {
         val hooks = spyk(InMemorySubscriptionHooks())
         val testServer = InMemoryGraphQLSubscriptionServer(
             requestHandler = handler,
+            serializer = serializer,
             hooks = hooks
         )
 
@@ -259,20 +264,20 @@ class GraphQLWebSocketServerTest {
                 .collect()
         }
 
-        session.send(mapper.writeValueAsString(SubscriptionMessageConnectionInit()))
-        val ack: GraphQLSubscriptionMessage = mapper.readValue(responseChannel.receive())
+        session.send(serializer.serialize(SubscriptionMessageConnectionInit()))
+        val ack: GraphQLSubscriptionMessage = serializer.deserialize(responseChannel.receive())
         assertEquals(GRAPHQL_WS_CONNECTION_ACK, ack.type)
 
         val id = UUID.randomUUID().toString()
         val request = GraphQLRequest(query = "subscription { counter }")
         val subscriptionOperation = SubscriptionMessageSubscribe(id = id, payload = request)
-        session.send(mapper.writeValueAsString(subscriptionOperation))
+        session.send(serializer.serialize(subscriptionOperation))
 
-        val counterResponse: GraphQLSubscriptionMessage = mapper.readValue(responseChannel.receive())
+        val counterResponse: GraphQLSubscriptionMessage = serializer.deserialize(responseChannel.receive())
         assertTrue(counterResponse is SubscriptionMessageNext)
         assertEquals(id, counterResponse.id)
 
-        session.send(mapper.writeValueAsString(SubscriptionMessageComplete(id)))
+        session.send(serializer.serialize(SubscriptionMessageComplete(id)))
         delay(100)
         subscriptionJob.cancelAndJoin()
 
@@ -284,7 +289,7 @@ class GraphQLWebSocketServerTest {
     @Test
     fun `verify unknown message is rejected`() = runTest {
         val handler = GraphQLRequestHandler(graphQL = testGraphQLEngine())
-        val testServer = InMemoryGraphQLSubscriptionServer(requestHandler = handler)
+        val testServer = InMemoryGraphQLSubscriptionServer(requestHandler = handler, serializer = serializer)
 
         val session = Channel<String>()
         val responseChannel = testServer.outboundChannel
@@ -294,8 +299,8 @@ class GraphQLWebSocketServerTest {
                 .collect()
         }
 
-        session.send(mapper.writeValueAsString(SubscriptionMessageInvalid()))
-        val error: GraphQLSubscriptionStatus = mapper.readValue(responseChannel.receive())
+        session.send(serializer.serialize(SubscriptionMessageInvalid()))
+        val error: GraphQLSubscriptionStatus = serializer.deserialize(responseChannel.receive())
         assertEquals(GraphQLSubscriptionStatus.INVALID_MESSAGE, error)
         subscriptionJob.cancelAndJoin()
     }

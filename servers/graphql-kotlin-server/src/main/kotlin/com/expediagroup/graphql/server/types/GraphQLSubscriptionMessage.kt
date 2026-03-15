@@ -16,14 +16,6 @@
 
 package com.expediagroup.graphql.server.types
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties
-import com.fasterxml.jackson.annotation.JsonInclude
-import com.fasterxml.jackson.core.JsonParser
-import com.fasterxml.jackson.databind.DeserializationContext
-import com.fasterxml.jackson.databind.JsonDeserializer
-import com.fasterxml.jackson.databind.JsonNode
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize
-
 const val GRAPHQL_WS_CONNECTION_INIT = "connection_init"
 const val GRAPHQL_WS_CONNECTION_ACK = "connection_ack"
 const val GRAPHQL_WS_PING = "ping"
@@ -39,7 +31,6 @@ const val GRAPHQL_WS_INVALID = "invalid"
  *
  * @see <a href=https://github.com/enisdenjo/graphql-ws/blob/master/PROTOCOL.md>graphql-transport-ws protocol</a>
  */
-@JsonDeserialize(using = GraphQLSubscriptionMessageDeserializer::class)
 sealed class GraphQLSubscriptionMessage {
     abstract val type: String
 }
@@ -55,9 +46,6 @@ sealed class GraphQLSubscriptionMessage {
  * @param payload optional field to provide additional details about the connection
  * @see <a href="https://github.com/enisdenjo/graphql-ws/blob/master/PROTOCOL.md#connectioninit">connection-init</a>
  */
-@JsonDeserialize(using = JsonDeserializer.None::class)
-@JsonInclude(JsonInclude.Include.NON_NULL)
-@JsonIgnoreProperties(ignoreUnknown = true)
 data class SubscriptionMessageConnectionInit(val payload: Any? = null) : GraphQLSubscriptionMessage() {
     override val type: String = GRAPHQL_WS_CONNECTION_INIT
 }
@@ -68,9 +56,6 @@ data class SubscriptionMessageConnectionInit(val payload: Any? = null) : GraphQL
  * @param payload optional field to provide additional details about the connection
  * @see <a href="https://github.com/enisdenjo/graphql-ws/blob/master/PROTOCOL.md#connectionack">connection-ack</a>
  */
-@JsonInclude(JsonInclude.Include.NON_NULL)
-@JsonDeserialize(using = JsonDeserializer.None::class)
-@JsonIgnoreProperties(ignoreUnknown = true)
 data class SubscriptionMessageConnectionAck(val payload: Any? = null) : GraphQLSubscriptionMessage() {
     override val type: String = GRAPHQL_WS_CONNECTION_ACK
 }
@@ -81,9 +66,6 @@ data class SubscriptionMessageConnectionAck(val payload: Any? = null) : GraphQLS
  * @param payload optional field to provide additional details about the connection
  * @see <a href="https://github.com/enisdenjo/graphql-ws/blob/master/PROTOCOL.md#ping">ping</a>
  */
-@JsonInclude(JsonInclude.Include.NON_NULL)
-@JsonDeserialize(using = JsonDeserializer.None::class)
-@JsonIgnoreProperties(ignoreUnknown = true)
 data class SubscriptionMessagePing(val payload: Any? = null) : GraphQLSubscriptionMessage() {
     override val type: String = GRAPHQL_WS_PING
 }
@@ -94,9 +76,6 @@ data class SubscriptionMessagePing(val payload: Any? = null) : GraphQLSubscripti
  * @param payload optional field to provide additional details about the connection
  * @see <a href="https://github.com/enisdenjo/graphql-ws/blob/master/PROTOCOL.md#pong">pong</a>
  */
-@JsonInclude(JsonInclude.Include.NON_NULL)
-@JsonDeserialize(using = JsonDeserializer.None::class)
-@JsonIgnoreProperties(ignoreUnknown = true)
 data class SubscriptionMessagePong(val payload: Any? = null) : GraphQLSubscriptionMessage() {
     override val type: String = GRAPHQL_WS_PONG
 }
@@ -111,8 +90,6 @@ data class SubscriptionMessagePong(val payload: Any? = null) : GraphQLSubscripti
  * @param payload GraphQL subscription operation request
  * @see <a href="https://github.com/enisdenjo/graphql-ws/blob/master/PROTOCOL.md#subscribe">subscribe</a>
  */
-@JsonDeserialize(using = JsonDeserializer.None::class)
-@JsonIgnoreProperties(ignoreUnknown = true)
 data class SubscriptionMessageSubscribe(val id: String, val payload: GraphQLRequest) : GraphQLSubscriptionMessage() {
     override val type: String = GRAPHQL_WS_SUBSCRIBE
 }
@@ -125,8 +102,6 @@ data class SubscriptionMessageSubscribe(val id: String, val payload: GraphQLRequ
  * @param payload GraphQL subscription operation response
  * @see <a href="https://github.com/enisdenjo/graphql-ws/blob/master/PROTOCOL.md#next">next</a>
  */
-@JsonDeserialize(using = JsonDeserializer.None::class)
-@JsonIgnoreProperties(ignoreUnknown = true)
 data class SubscriptionMessageNext(val id: String, val payload: GraphQLResponse<*>) : GraphQLSubscriptionMessage() {
     override val type: String = GRAPHQL_WS_NEXT
 }
@@ -138,8 +113,6 @@ data class SubscriptionMessageNext(val id: String, val payload: GraphQLResponse<
  * @param payload GraphQL errors encountered during subscription execution
  * @see <a href="https://github.com/enisdenjo/graphql-ws/blob/master/PROTOCOL.md#error">error</a>
  */
-@JsonDeserialize(using = JsonDeserializer.None::class)
-@JsonIgnoreProperties(ignoreUnknown = true)
 data class SubscriptionMessageError(val id: String, val payload: List<GraphQLServerError>) : GraphQLSubscriptionMessage() {
     override val type: String = GRAPHQL_WS_ERROR
 }
@@ -150,8 +123,6 @@ data class SubscriptionMessageError(val id: String, val payload: List<GraphQLSer
  * @param id unique subscription id
  * @see <a href="https://github.com/enisdenjo/graphql-ws/blob/master/PROTOCOL.md#complete">complete</a>
  */
-@JsonDeserialize(using = JsonDeserializer.None::class)
-@JsonIgnoreProperties(ignoreUnknown = true)
 data class SubscriptionMessageComplete(val id: String) : GraphQLSubscriptionMessage() {
     override val type: String = GRAPHQL_WS_COMPLETE
 }
@@ -162,26 +133,6 @@ data class SubscriptionMessageComplete(val id: String) : GraphQLSubscriptionMess
  * @param id unique subscription id
  * @see <a href="https://github.com/enisdenjo/graphql-ws/blob/master/PROTOCOL.md#invalid">invalid</a>
  */
-@JsonIgnoreProperties(ignoreUnknown = true)
-@JsonDeserialize(using = JsonDeserializer.None::class)
 data class SubscriptionMessageInvalid(val id: String? = null, val payload: Any? = null) : GraphQLSubscriptionMessage() {
     override val type: String = GRAPHQL_WS_INVALID
-}
-
-class GraphQLSubscriptionMessageDeserializer : JsonDeserializer<GraphQLSubscriptionMessage>() {
-    override fun deserialize(parser: JsonParser, ctxt: DeserializationContext): GraphQLSubscriptionMessage {
-        val codec = parser.codec
-        val jsonNode = codec.readTree<JsonNode>(parser)
-        return when (jsonNode.get("type")?.textValue()) {
-            GRAPHQL_WS_CONNECTION_INIT -> codec.treeToValue(jsonNode, SubscriptionMessageConnectionInit::class.java)
-            GRAPHQL_WS_CONNECTION_ACK -> codec.treeToValue(jsonNode, SubscriptionMessageConnectionAck::class.java)
-            GRAPHQL_WS_PING -> codec.treeToValue(jsonNode, SubscriptionMessagePing::class.java)
-            GRAPHQL_WS_PONG -> codec.treeToValue(jsonNode, SubscriptionMessagePong::class.java)
-            GRAPHQL_WS_SUBSCRIBE -> codec.treeToValue(jsonNode, SubscriptionMessageSubscribe::class.java)
-            GRAPHQL_WS_NEXT -> codec.treeToValue(jsonNode, SubscriptionMessageNext::class.java)
-            GRAPHQL_WS_ERROR -> codec.treeToValue(jsonNode, SubscriptionMessageError::class.java)
-            GRAPHQL_WS_COMPLETE -> codec.treeToValue(jsonNode, SubscriptionMessageComplete::class.java)
-            else -> codec.treeToValue(jsonNode, SubscriptionMessageInvalid::class.java)
-        }
-    }
 }

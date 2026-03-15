@@ -8,6 +8,7 @@ plugins {
 
 dependencies {
     api(projects.graphqlKotlinServer)
+    api(projects.graphqlKotlinServerJackson)
     api(projects.graphqlKotlinFederation)
     api(libs.spring.boot.webflux)
     api(libs.kotlinx.coroutines.jdk8)

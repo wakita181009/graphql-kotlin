@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 Expedia, Inc
+ * Copyright 2026 Expedia, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,11 +14,13 @@
  * limitations under the License.
  */
 
-package com.expediagroup.graphql.server.types
+package com.expediagroup.graphql.server.jackson.types
 
-import com.alibaba.fastjson2.JSON
-import com.alibaba.fastjson2.JSONWriter
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import com.expediagroup.graphql.server.jackson.serialization.JacksonGraphQLSerializer
+import com.expediagroup.graphql.server.types.GraphQLBatchResponse
+import com.expediagroup.graphql.server.types.GraphQLResponse
+import com.expediagroup.graphql.server.types.GraphQLServerError
+import com.expediagroup.graphql.server.types.GraphQLServerResponse
 import com.fasterxml.jackson.module.kotlin.readValue
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
@@ -26,15 +28,11 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
-class GraphQLServerResponseTest {
-
-    init {
-        JSON.config(JSONWriter.Feature.WriteNulls)
-    }
+class GraphQLServerResponseSerializationTest {
 
     class MyQuery(val foo: Int)
 
-    private val mapper = jacksonObjectMapper()
+    private val mapper = JacksonGraphQLSerializer.defaultObjectMapper()
 
     @Test
     fun `jackson verify simple serialization`() {
@@ -47,16 +45,6 @@ class GraphQLServerResponseTest {
     }
 
     @Test
-    fun `fastjson2 verify simple serialization`() {
-        val response = GraphQLResponse(
-            data = MyQuery(1)
-        )
-        val expectedJson =
-            """{"data":{"foo":1}}"""
-        assertEquals(expectedJson, JSON.toJSONString(response))
-    }
-
-    @Test
     fun `jackson verify complete serialization`() {
         val response = GraphQLResponse(
             data = MyQuery(1),
@@ -66,19 +54,6 @@ class GraphQLServerResponseTest {
         val expectedJson =
             """{"data":{"foo":1},"errors":[{"message":"my error"}],"extensions":{"bar":2}}"""
         assertEquals(expectedJson, mapper.writeValueAsString(response))
-        assertEquals(expectedJson, JSON.toJSONString(response))
-    }
-
-    @Test
-    fun `fastjson2 verify complete serialization`() {
-        val response = GraphQLResponse(
-            data = MyQuery(1),
-            errors = listOf(GraphQLServerError("my error")),
-            extensions = mapOf("bar" to 2)
-        )
-        val expectedJson =
-            """{"data":{"foo":1},"errors":[{"message":"my error"}],"extensions":{"bar":2}}"""
-        assertEquals(expectedJson, JSON.toJSONString(response))
     }
 
     @Test
@@ -101,25 +76,6 @@ class GraphQLServerResponseTest {
     }
 
     @Test
-    fun `fastjson2 verify batch response serialization`() {
-        val batchResponse = GraphQLBatchResponse(
-            responses = listOf(
-                GraphQLResponse(
-                    data = MyQuery(1)
-                ),
-                GraphQLResponse(
-                    data = MyQuery(2),
-                    errors = listOf(GraphQLServerError("my error")),
-                    extensions = mapOf("bar" to 2)
-                )
-            )
-        )
-        val expectedJson =
-            """[{"data":{"foo":1}},{"data":{"foo":2},"errors":[{"message":"my error"}],"extensions":{"bar":2}}]"""
-        assertEquals(expectedJson, JSON.toJSONString(batchResponse))
-    }
-
-    @Test
     fun `jackson serializes null values from data property, not null values from GraphQLResponse and GraphQLResponseError`() {
         val response =
             GraphQLResponse(
@@ -137,28 +93,6 @@ class GraphQLServerResponseTest {
         assertEquals(
             """{"data":{"1":null,"1.1":{"1.1.k1":"1.1.v1","1.1.k2":null}},"errors":[{"message":"test"}]}""",
             mapper.writeValueAsString(response),
-        )
-    }
-
-    @Test
-    fun `fastjson2 serializes null values from data property, not null values from GraphQLResponse and GraphQLResponseError`() {
-        val response =
-            GraphQLResponse(
-                mapOf(
-                    "1" to null,
-                    "1.1" to
-                        mapOf(
-                            "1.1.k1" to "1.1.v1",
-                            "1.1.k2" to null,
-                        ),
-                ),
-                listOf(GraphQLServerError("test")),
-                null,
-            )
-        val json = JSON.toJSONString(response)
-        assertEquals(
-            """{"data":{"1":null,"1.1":{"1.1.k1":"1.1.v1","1.1.k2":null}},"errors":[{"message":"test"}]}""",
-            json,
         )
     }
 

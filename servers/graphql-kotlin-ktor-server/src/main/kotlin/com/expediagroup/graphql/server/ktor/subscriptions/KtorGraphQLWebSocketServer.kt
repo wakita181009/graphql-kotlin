@@ -18,8 +18,8 @@ package com.expediagroup.graphql.server.ktor.subscriptions
 
 import com.expediagroup.graphql.server.execution.GraphQLRequestHandler
 import com.expediagroup.graphql.server.execution.subscription.GraphQLWebSocketServer
+import com.expediagroup.graphql.server.serialization.GraphQLSerializer
 import com.expediagroup.graphql.server.types.GraphQLSubscriptionStatus
-import com.fasterxml.jackson.databind.ObjectMapper
 import io.ktor.server.websocket.WebSocketServerSession
 import io.ktor.websocket.CloseReason
 import io.ktor.websocket.Frame
@@ -36,9 +36,9 @@ class KtorGraphQLWebSocketServer(
     subscriptionHooks: KtorGraphQLSubscriptionHooks,
     requestHandler: GraphQLRequestHandler,
     initTimeoutMillis: Long,
-    objectMapper: ObjectMapper
+    serializer: GraphQLSerializer
 ) : GraphQLWebSocketServer<WebSocketServerSession, Unit>(
-    requestParser, contextFactory, subscriptionHooks, requestHandler, initTimeoutMillis, objectMapper
+    requestParser, contextFactory, subscriptionHooks, requestHandler, initTimeoutMillis, serializer
 ) {
     override suspend fun closeSession(session: WebSocketServerSession, reason: GraphQLSubscriptionStatus) {
         session.close(CloseReason(reason.code.toShort(), reason.reason))
