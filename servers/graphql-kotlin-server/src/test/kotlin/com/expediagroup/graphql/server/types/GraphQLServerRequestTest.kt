@@ -21,11 +21,15 @@ import com.alibaba.fastjson2.JSONException
 import com.alibaba.fastjson2.JSONWriter
 import com.alibaba.fastjson2.to
 import com.expediagroup.graphql.generator.scalars.ID
-import com.fasterxml.jackson.databind.exc.MismatchedInputException
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import com.fasterxml.jackson.module.kotlin.readValue
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.module.kotlin.KotlinModule as Jackson2KotlinModule
+import com.fasterxml.jackson.module.kotlin.readValue as jackson2ReadValue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import tools.jackson.databind.exc.MismatchedInputException
+import tools.jackson.databind.json.JsonMapper
+import tools.jackson.module.kotlin.KotlinModule
+import tools.jackson.module.kotlin.readValue
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
@@ -36,7 +40,8 @@ class GraphQLServerRequestTest {
         JSON.config(JSONWriter.Feature.WriteNulls)
     }
 
-    private val mapper = jacksonObjectMapper()
+    private val mapper = JsonMapper.builder().addModule(KotlinModule.Builder().build()).build()
+    private val jackson2Mapper = ObjectMapper().registerModule(Jackson2KotlinModule.Builder().build())
 
     @Test
     fun `verify simple serialization`() {
@@ -192,5 +197,39 @@ class GraphQLServerRequestTest {
         assertThrows<JSONException> {
             toDeserializeWithError.to<GraphQLServerRequest>()
         }
+    }
+
+    @Test
+    fun `jackson2 verify simple deserialization`() {
+        val input = """{"query":"{ foo }"}"""
+        val request = jackson2Mapper.jackson2ReadValue<GraphQLServerRequest>(input)
+        assertTrue(request is GraphQLRequest)
+        assertEquals("{ foo }", request.query)
+        assertNull(request.operationName)
+        assertNull(request.variables)
+    }
+
+    @Test
+    fun `jackson2 verify complete deserialization`() {
+        val input =
+            """{"query":"query FooQuery(${'$'}input: Int) { foo(${'$'}input) }","operationName":"FooQuery","variables":{"input":1}}"""
+        val request = jackson2Mapper.jackson2ReadValue<GraphQLServerRequest>(input)
+        assertTrue(request is GraphQLRequest)
+        assertEquals("query FooQuery(\$input: Int) { foo(\$input) }", request.query)
+        assertEquals("FooQuery", request.operationName)
+        assertEquals(mapOf("input" to 1), request.variables)
+    }
+
+    @Test
+    fun `jackson2 verify batch request deserialization`() {
+        val input =
+            """[{"query":"query FooQuery(${'$'}input: Int) { foo(${'$'}input) }","operationName":"FooQuery","variables":{"input":1}},{"query":"query BarQuery { bar }"}]"""
+        val request = jackson2Mapper.jackson2ReadValue<GraphQLServerRequest>(input)
+        assertTrue(request is GraphQLBatchRequest)
+        assertEquals(2, request.requests.size)
+        assertEquals("query FooQuery(\$input: Int) { foo(\$input) }", request.requests[0].query)
+        assertEquals("FooQuery", request.requests[0].operationName)
+        assertEquals(mapOf("input" to 1), request.requests[0].variables)
+        assertEquals("query BarQuery { bar }", request.requests[1].query)
     }
 }

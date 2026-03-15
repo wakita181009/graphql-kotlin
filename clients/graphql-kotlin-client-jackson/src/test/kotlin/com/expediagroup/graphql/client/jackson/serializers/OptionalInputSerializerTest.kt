@@ -17,17 +17,21 @@
 package com.expediagroup.graphql.client.jackson.serializers
 
 import com.expediagroup.graphql.client.jackson.types.OptionalInput
+import com.expediagroup.graphql.client.jackson.types.UndefinedFilter
 import com.fasterxml.jackson.annotation.JsonInclude
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import tools.jackson.databind.json.JsonMapper
+import tools.jackson.module.kotlin.KotlinModule
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 
 class OptionalInputSerializerTest {
 
-    private val mapper = jacksonObjectMapper()
-    init {
-        mapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY)
-    }
+    private val mapper = JsonMapper.builder()
+        .addModule(KotlinModule.Builder().build())
+        .changeDefaultPropertyInclusion { _ -> JsonInclude.Value.construct(JsonInclude.Include.NON_EMPTY, JsonInclude.Include.NON_EMPTY) }
+        .build()
 
     @Test
     fun `verify undefined value is serialized to empty JSON`() {
@@ -59,6 +63,26 @@ class OptionalInputSerializerTest {
     fun `verify inner undefined values are serialized correctly`() {
         val nestedUndefined = InputWrapper(optionalInputObject = OptionalInput.Defined(BasicInput(name = OptionalInput.Undefined)))
         assertEquals("""{"optionalInputObject":{}}""", mapper.writeValueAsString(nestedUndefined))
+    }
+
+    @Test
+    fun `verify undefined toString returns correct value`() {
+        assertEquals("Undefined", OptionalInput.Undefined.toString())
+    }
+
+    @Test
+    fun `verify defined toString returns correct value`() {
+        assertEquals("Defined(value=123)", OptionalInput.Defined(123).toString())
+        assertEquals("Defined(value=null)", OptionalInput.Defined<String?>(null).toString())
+    }
+
+    @Test
+    fun `verify undefined filter equals returns true for undefined and false otherwise`() {
+        val filter = UndefinedFilter()
+        assertTrue(filter.equals(OptionalInput.Undefined))
+        assertFalse(filter.equals(OptionalInput.Defined(123)))
+        assertFalse(filter.equals("other"))
+        assertFalse(filter.equals(null))
     }
 
     data class InputWrapper(

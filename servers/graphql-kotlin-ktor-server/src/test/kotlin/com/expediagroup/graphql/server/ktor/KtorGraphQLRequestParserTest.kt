@@ -2,7 +2,6 @@ package com.expediagroup.graphql.server.ktor
 
 import com.expediagroup.graphql.server.types.GraphQLBatchRequest
 import com.expediagroup.graphql.server.types.GraphQLRequest
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import io.ktor.http.HttpMethod
 import io.ktor.server.request.ApplicationReceivePipeline
 import io.ktor.server.request.ApplicationRequest
@@ -14,6 +13,8 @@ import io.mockk.mockk
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Test
+import tools.jackson.databind.json.JsonMapper
+import tools.jackson.module.kotlin.KotlinModule
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertNotNull
@@ -22,7 +23,7 @@ import kotlin.test.assertTrue
 
 @ExperimentalCoroutinesApi
 class KtorGraphQLRequestParserTest {
-    private val mapper = jacksonObjectMapper()
+    private val mapper = JsonMapper.builder().addModule(KotlinModule.Builder().build()).build()
     private val parser = KtorGraphQLRequestParser(mapper)
 
     @Test

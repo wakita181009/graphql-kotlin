@@ -13,10 +13,7 @@ dependencies {
     api(libs.kotlinx.serialization.json)
     implementation(libs.jackson)
     implementation(libs.ktor.client.apache)
-    implementation(libs.ktor.serialization.jackson) {
-        exclude(group = "com.fasterxml.jackson.core", module = "jackson-databind")
-        exclude(group = "com.fasterxml.jackson.module", module = "jackson-module-kotlin")
-    }
+    implementation(libs.ktor.serialization.jackson)
     implementation(libs.ktor.client.content)
     implementation(libs.slf4j)
     testImplementation(projects.graphqlKotlinClientJackson)

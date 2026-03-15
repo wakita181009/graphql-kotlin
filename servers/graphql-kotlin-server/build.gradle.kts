@@ -12,6 +12,7 @@ dependencies {
     api(projects.graphqlKotlinDataloaderInstrumentation)
     api(projects.graphqlKotlinAutomaticPersistedQueries)
     api(libs.jackson)
+    api(libs.jackson2)
     api(libs.fastjson2)
     implementation(libs.slf4j)
     testImplementation(libs.kotlinx.coroutines.test)

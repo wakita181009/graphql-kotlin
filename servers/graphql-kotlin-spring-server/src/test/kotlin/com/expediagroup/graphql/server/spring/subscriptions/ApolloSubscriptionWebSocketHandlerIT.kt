@@ -22,8 +22,6 @@ import com.expediagroup.graphql.server.operations.Subscription
 import com.expediagroup.graphql.server.spring.subscriptions.ApolloSubscriptionOperationMessage.ClientMessages
 import com.expediagroup.graphql.server.spring.subscriptions.ApolloSubscriptionOperationMessage.ServerMessages
 import com.expediagroup.graphql.server.types.GraphQLRequest
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import com.fasterxml.jackson.module.kotlin.readValue
 import graphql.GraphQLContext
 import graphql.schema.DataFetchingEnvironment
 import org.junit.jupiter.api.Test
@@ -43,6 +41,9 @@ import reactor.test.publisher.TestPublisher
 import java.net.URI
 import java.time.Duration
 import kotlin.random.Random
+import tools.jackson.databind.json.JsonMapper
+import tools.jackson.module.kotlin.KotlinModule
+import tools.jackson.module.kotlin.readValue
 
 @SpringBootTest(
     webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
@@ -57,7 +58,7 @@ class ApolloSubscriptionWebSocketHandlerIT(
     @LocalServerPort private var port: Int
 ) {
 
-    private val objectMapper = jacksonObjectMapper()
+    private val objectMapper = JsonMapper.builder().addModule(KotlinModule.Builder().build()).build()
     private val client = ReactorNettyWebSocketClient()
     private val uri = URI.create("ws://localhost:$port/subscriptions")
 

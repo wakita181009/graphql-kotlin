@@ -22,16 +22,19 @@ import com.fasterxml.jackson.annotation.JsonCreator
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonValue
-import com.fasterxml.jackson.core.JsonParser
-import com.fasterxml.jackson.databind.DeserializationContext
-import com.fasterxml.jackson.databind.JsonDeserializer
-import com.fasterxml.jackson.databind.JsonNode
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize
+import com.fasterxml.jackson.databind.JsonDeserializer as Jackson2JsonDeserializer
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize as Jackson2JsonDeserialize
+import tools.jackson.core.JsonParser
+import tools.jackson.databind.DeserializationContext
+import tools.jackson.databind.JsonNode
+import tools.jackson.databind.ValueDeserializer
+import tools.jackson.databind.annotation.JsonDeserialize
 
 /**
  * GraphQL server response abstraction that provides a convenient way to handle both single and batch responses.
  */
 @JsonDeserialize(using = GraphQLServerResponseDeserializer::class)
+@Jackson2JsonDeserialize(using = Jackson2GraphQLServerResponseDeserializer::class)
 sealed class GraphQLServerResponse
 
 /**
@@ -39,7 +42,8 @@ sealed class GraphQLServerResponse
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
-@JsonDeserialize(using = JsonDeserializer.None::class)
+@JsonDeserialize(using = ValueDeserializer.None::class)
+@Jackson2JsonDeserialize(using = Jackson2JsonDeserializer.None::class)
 @JSONType(serializeFilters = [FastJsonIncludeNonNullProperty::class])
 data class GraphQLResponse<T>(
     val data: T? = null,
@@ -52,13 +56,27 @@ data class GraphQLResponse<T>(
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
-@JsonDeserialize(using = JsonDeserializer.None::class)
+@JsonDeserialize(using = ValueDeserializer.None::class)
+@Jackson2JsonDeserialize(using = Jackson2JsonDeserializer.None::class)
 data class GraphQLBatchResponse @JsonCreator constructor(@get:JsonValue val responses: List<GraphQLResponse<*>>) : GraphQLServerResponse()
 
-class GraphQLServerResponseDeserializer : JsonDeserializer<GraphQLServerResponse>() {
+// Jackson 3.x deserializer
+class GraphQLServerResponseDeserializer : ValueDeserializer<GraphQLServerResponse>() {
     override fun deserialize(parser: JsonParser, ctxt: DeserializationContext): GraphQLServerResponse {
+        val jsonNode = parser.readValueAsTree<JsonNode>()
+        return if (jsonNode.isArray) {
+            ctxt.readTreeAsValue(jsonNode, GraphQLBatchResponse::class.java)
+        } else {
+            ctxt.readTreeAsValue(jsonNode, GraphQLResponse::class.java)
+        }
+    }
+}
+
+// Jackson 2.x deserializer (for Ktor compatibility)
+class Jackson2GraphQLServerResponseDeserializer : com.fasterxml.jackson.databind.JsonDeserializer<GraphQLServerResponse>() {
+    override fun deserialize(parser: com.fasterxml.jackson.core.JsonParser, ctxt: com.fasterxml.jackson.databind.DeserializationContext): GraphQLServerResponse {
         val codec = parser.codec
-        val jsonNode = codec.readTree<JsonNode>(parser)
+        val jsonNode = codec.readTree<com.fasterxml.jackson.databind.JsonNode>(parser)
         return if (jsonNode.isArray) {
             codec.treeToValue(jsonNode, GraphQLBatchResponse::class.java)
         } else {

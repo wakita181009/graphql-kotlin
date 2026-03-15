@@ -14,6 +14,7 @@ dependencies {
     implementation(projects.commonGraalvmServer)
     testImplementation(libs.kotlin.test)
     testImplementation(libs.spring.boot.test)
+    testImplementation(libs.spring.boot.webtestclient)
 }
 
 tasks {
@@ -27,6 +28,7 @@ graalvmNative {
     binaries {
         named("main") {
             verbose.set(true)
+            buildArgs.add("-H:+ReportExceptionStackTraces")
             jvmArgs("-Xmx6g")
         }
         metadataRepository {
@@ -35,10 +37,14 @@ graalvmNative {
     }
 }
 
+springBoot {
+    mainClass.set("com.expediagroup.graalvm.spring.ApplicationMain")
+}
+
 graphql {
     graalVm {
         packages = listOf("com.expediagroup.graalvm")
-        mainClassName = "com.expediagroup.graalvm.spring.ApplicationKt"
+        mainClassName = "com.expediagroup.graalvm.spring.ApplicationMain"
     }
 }
 

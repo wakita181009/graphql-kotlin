@@ -15,14 +15,10 @@
  */
 package com.expediagroup.graphql.server.spring
 
-import com.alibaba.fastjson2.JSONWriter
-import com.alibaba.fastjson2.support.config.FastJsonConfig
-import com.alibaba.fastjson2.support.spring6.http.codec.Fastjson2Decoder
-import com.alibaba.fastjson2.support.spring6.http.codec.Fastjson2Encoder
-import com.fasterxml.jackson.databind.ObjectMapper
 import org.springframework.context.annotation.Configuration
 import org.springframework.http.codec.ServerCodecConfigurer
 import org.springframework.web.reactive.config.WebFluxConfigurer
+import tools.jackson.databind.ObjectMapper
 
 @Configuration
 class GraphQLServerCodecConfiguration(
@@ -30,21 +26,9 @@ class GraphQLServerCodecConfiguration(
     private val objectMapper: ObjectMapper,
 ) : WebFluxConfigurer {
     override fun configureHttpMessageCodecs(configurer: ServerCodecConfigurer) {
-        if (config.serializationLibrary == SerializationLibrary.FASTJSON) {
-            configurer.defaultCodecs().apply {
-                jackson2JsonDecoder(Fastjson2Decoder(objectMapper))
-                jackson2JsonEncoder(
-                    Fastjson2Encoder(
-                        objectMapper,
-                        FastJsonConfig().also {
-                            it.setWriterFeatures(
-                                JSONWriter.Feature.LargeObject,
-                                JSONWriter.Feature.WriteNulls,
-                            )
-                        },
-                    )
-                )
-            }
-        }
+        // Default Jackson 3.x codecs are used via Spring 7.x auto-configuration.
+        // Fastjson2-based HTTP codec override was removed due to incompatibility
+        // with Spring 7.x / Jackson 3.x. Fastjson2 annotations on GraphQL types
+        // are still used for direct (non-HTTP-codec) serialization.
     }
 }

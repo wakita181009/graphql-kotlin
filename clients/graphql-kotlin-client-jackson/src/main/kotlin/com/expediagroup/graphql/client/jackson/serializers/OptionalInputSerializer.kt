@@ -17,17 +17,17 @@
 package com.expediagroup.graphql.client.jackson.serializers
 
 import com.expediagroup.graphql.client.jackson.types.OptionalInput
-import com.fasterxml.jackson.core.JsonGenerator
-import com.fasterxml.jackson.databind.JsonSerializer
-import com.fasterxml.jackson.databind.SerializerProvider
+import tools.jackson.core.JsonGenerator
+import tools.jackson.databind.SerializationContext
+import tools.jackson.databind.ValueSerializer
 
-class OptionalInputSerializer : JsonSerializer<OptionalInput<*>>() {
+class OptionalInputSerializer : ValueSerializer<OptionalInput<*>>() {
 
-    override fun isEmpty(provider: SerializerProvider, value: OptionalInput<*>?): Boolean {
+    override fun isEmpty(provider: SerializationContext, value: OptionalInput<*>?): Boolean {
         return value == OptionalInput.Undefined
     }
 
-    override fun serialize(value: OptionalInput<*>, gen: JsonGenerator, serializers: SerializerProvider) {
+    override fun serialize(value: OptionalInput<*>, gen: JsonGenerator, serializers: SerializationContext) {
         when (value) {
             is OptionalInput.Undefined -> return
             is OptionalInput.Defined -> {

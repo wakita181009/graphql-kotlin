@@ -32,16 +32,19 @@ import com.expediagroup.graphql.client.jackson.types.JacksonGraphQLError
 import com.expediagroup.graphql.client.jackson.types.JacksonGraphQLResponse
 import com.expediagroup.graphql.client.jackson.types.JacksonGraphQLSourceLocation
 import com.expediagroup.graphql.client.jackson.types.OptionalInput
-import com.fasterxml.jackson.databind.SerializationFeature
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import tools.jackson.databind.SerializationFeature
+import tools.jackson.databind.json.JsonMapper
+import tools.jackson.module.kotlin.KotlinModule
 import org.junit.jupiter.api.Test
 import java.util.UUID
 import kotlin.test.assertEquals
 
 class GraphQLClientJacksonSerializerTest {
 
-    private val testMapper = jacksonObjectMapper()
+    private val testMapper = JsonMapper.builder()
+        .addModule(KotlinModule.Builder().build())
         .enable(SerializationFeature.INDENT_OUTPUT)
+        .build()
     private val serializer = GraphQLClientJacksonSerializer(testMapper)
 
     @Test
@@ -52,8 +55,8 @@ class GraphQLClientJacksonSerializerTest {
             |  "variables" : {
             |    "input" : 1.0
             |  },
-            |  "query" : "FIRST_QUERY",
-            |  "operationName" : "FirstQuery"
+            |  "operationName" : "FirstQuery",
+            |  "query" : "FIRST_QUERY"
             |}
             """.trimMargin()
 
@@ -69,11 +72,11 @@ class GraphQLClientJacksonSerializerTest {
             |  "variables" : {
             |    "input" : 1.0
             |  },
-            |  "query" : "FIRST_QUERY",
-            |  "operationName" : "FirstQuery"
+            |  "operationName" : "FirstQuery",
+            |  "query" : "FIRST_QUERY"
             |}, {
-            |  "query" : "OTHER_QUERY",
-            |  "operationName" : "OtherQuery"
+            |  "operationName" : "OtherQuery",
+            |  "query" : "OTHER_QUERY"
             |} ]
             """.trimMargin()
 
@@ -187,8 +190,8 @@ class GraphQLClientJacksonSerializerTest {
             |    "alias" : "1234",
             |    "custom" : "$randomUUID"
             |  },
-            |  "query" : "SCALAR_QUERY",
-            |  "operationName" : "ScalarQuery"
+            |  "operationName" : "ScalarQuery",
+            |  "query" : "SCALAR_QUERY"
             |}
             """.trimMargin()
 
@@ -233,8 +236,8 @@ class GraphQLClientJacksonSerializerTest {
             |  "variables" : {
             |    "enum" : "three"
             |  },
-            |  "query" : "ENUM_QUERY",
-            |  "operationName" : "EnumQuery"
+            |  "operationName" : "EnumQuery",
+            |  "query" : "ENUM_QUERY"
             |}
             """.trimMargin()
 
@@ -270,8 +273,8 @@ class GraphQLClientJacksonSerializerTest {
             |    "optionalIntInput" : 123,
             |    "optionalStringInput" : null
             |  },
-            |  "query" : "OPTIONAL_INPUT_QUERY",
-            |  "operationName" : "OptionalInputQuery"
+            |  "operationName" : "OptionalInputQuery",
+            |  "query" : "OPTIONAL_INPUT_QUERY"
             |}
             """.trimMargin()
 
@@ -304,8 +307,8 @@ class GraphQLClientJacksonSerializerTest {
             |      "pID" : "1"
             |    }
             |  },
-            |  "query" : "INPUT_QUERY",
-            |  "operationName" : "InputQuery"
+            |  "operationName" : "InputQuery",
+            |  "query" : "INPUT_QUERY"
             |}
         """.trimMargin()
         val serialized = serializer.serialize(query)
@@ -320,8 +323,8 @@ class GraphQLClientJacksonSerializerTest {
 
         val expected = """{
             |  "variables" : { },
-            |  "query" : "EMPTY_INPUT_QUERY",
-            |  "operationName" : "EmptyInputQuery"
+            |  "operationName" : "EmptyInputQuery",
+            |  "query" : "EMPTY_INPUT_QUERY"
             |}
         """.trimMargin()
         val serialized = serializer.serialize(query)
@@ -339,8 +342,8 @@ class GraphQLClientJacksonSerializerTest {
             |      "__typename" : "Product"
             |    } ]
             |  },
-            |  "query" : "ENTITIES_QUERY",
-            |  "operationName" : "EntitiesQuery"
+            |  "operationName" : "EntitiesQuery",
+            |  "query" : "ENTITIES_QUERY"
             |}
             """.trimMargin()
 

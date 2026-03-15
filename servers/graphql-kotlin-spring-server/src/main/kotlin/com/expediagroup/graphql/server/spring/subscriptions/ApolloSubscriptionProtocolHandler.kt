@@ -28,9 +28,6 @@ import com.expediagroup.graphql.server.spring.subscriptions.ApolloSubscriptionOp
 import com.expediagroup.graphql.server.spring.subscriptions.ApolloSubscriptionOperationMessage.ServerMessages.GQL_DATA
 import com.expediagroup.graphql.server.spring.subscriptions.ApolloSubscriptionOperationMessage.ServerMessages.GQL_ERROR
 import com.expediagroup.graphql.server.types.GraphQLRequest
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.module.kotlin.convertValue
-import com.fasterxml.jackson.module.kotlin.readValue
 import kotlinx.coroutines.reactor.asFlux
 import kotlinx.coroutines.runBlocking
 import org.slf4j.LoggerFactory
@@ -39,6 +36,9 @@ import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import reactor.kotlin.core.publisher.toFlux
 import java.time.Duration
+import tools.jackson.databind.ObjectMapper
+import tools.jackson.module.kotlin.convertValue
+import tools.jackson.module.kotlin.readValue
 
 /**
  * Implementation of the `graphql-ws` protocol defined by Apollo

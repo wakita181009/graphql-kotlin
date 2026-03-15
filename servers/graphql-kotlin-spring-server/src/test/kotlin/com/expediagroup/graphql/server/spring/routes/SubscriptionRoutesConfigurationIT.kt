@@ -27,15 +27,13 @@ import com.expediagroup.graphql.server.types.SubscriptionMessageConnectionAck
 import com.expediagroup.graphql.server.types.SubscriptionMessageConnectionInit
 import com.expediagroup.graphql.server.types.SubscriptionMessageNext
 import com.expediagroup.graphql.server.types.SubscriptionMessageSubscribe
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import com.fasterxml.jackson.module.kotlin.readValue
-import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Timeout
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.web.server.LocalServerPort
+import org.springframework.boot.webtestclient.autoconfigure.AutoConfigureWebTestClient
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.http.MediaType
@@ -47,6 +45,9 @@ import reactor.test.publisher.TestPublisher
 import java.net.URI
 import java.time.Duration
 import java.util.UUID
+import tools.jackson.databind.json.JsonMapper
+import tools.jackson.module.kotlin.KotlinModule
+import tools.jackson.module.kotlin.readValue
 
 @SpringBootTest(
     webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
@@ -57,12 +58,13 @@ import java.util.UUID
     ]
 )
 @EnableAutoConfiguration
+@AutoConfigureWebTestClient
 class SubscriptionRoutesConfigurationIT(
     @Autowired private val testClient: WebTestClient,
     @LocalServerPort private var port: Int
 ) {
 
-    val objectMapper = jacksonObjectMapper().registerKotlinModule()
+    val objectMapper = JsonMapper.builder().addModule(KotlinModule.Builder().build()).build()
 
     @Configuration
     class TestConfiguration {

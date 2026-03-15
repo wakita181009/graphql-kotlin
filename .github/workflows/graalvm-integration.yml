@@ -30,7 +30,7 @@ jobs:
       - name: Setup GraalVM
         uses: graalvm/setup-graalvm@v1
         with:
-          java-version: '17'
+          java-version: '21'
           distribution: 'graalvm'
           components: 'native-image'
           native-image-job-reports: 'true'
@@ -56,6 +56,9 @@ jobs:
           echo "SERVER_PID=$(echo $!)" >> $GITHUB_OUTPUT
         env:
           nativeImage: ${{ steps.build_server.outputs.NATIVE_IMAGE }}
+
+      - name: Wait for server to start
+        run: sleep 5
 
       - name: Integration Test
         run: |

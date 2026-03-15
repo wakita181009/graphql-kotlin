@@ -5,7 +5,8 @@ dataloader = "4.0.0"
 federation = "5.5.0"
 graphql-java = "24.3"
 graalvm = "0.11.1"
-jackson = "2.17.1"
+jackson = "3.0.4"
+jackson2 = "2.19.2"
 # kotlin version has to match the compile-testing compiler version
 kotlin = "2.3.0"
 kotlinx-benchmark = "0.4.13"
@@ -21,8 +22,8 @@ poet = "1.17.0"
 reactor-core = "3.7.16"
 reactor-extensions = "1.2.5"
 slf4j = "2.0.17"
-spring = "6.2.16"
-spring-boot = "3.5.11"
+spring = "7.0.5"
+spring-boot = "4.0.3"
 
 # security vulnerabilities overrides
 commons-codec = { strictly = "[1.13, 2[", prefer = "1.16.0" }
@@ -56,7 +57,8 @@ classgraph = { group = "io.github.classgraph", name = "classgraph", version.ref 
 dataloader = { group = "com.graphql-java", name = "java-dataloader", version.ref = "dataloader" }
 federation = { group = "com.apollographql.federation", name = "federation-graphql-java-support", version.ref = "federation" }
 graphql-java = { group = "com.graphql-java", name = "graphql-java", version.ref = "graphql-java" }
-jackson = { group = "com.fasterxml.jackson.module", name = "jackson-module-kotlin", version.ref = "jackson" }
+jackson = { group = "tools.jackson.module", name = "jackson-module-kotlin", version.ref = "jackson" }
+jackson2 = { group = "com.fasterxml.jackson.module", name = "jackson-module-kotlin", version.ref = "jackson2" }
 kotlin-gradle-api = { group = "org.jetbrains.kotlin", name = "kotlin-gradle-plugin-api", version.ref = "kotlin" }
 kotlin-reflect = { group = "org.jetbrains.kotlin", name = "kotlin-reflect", version.ref = "kotlin" }
 kotlin-serialization = { group = "org.jetbrains.kotlin", name = "kotlin-serialization", version.ref= "kotlin" }
@@ -88,7 +90,6 @@ spring-boot-webflux = { group = "org.springframework.boot", name = "spring-boot-
 spring-webflux = { group = "org.springframework", name = "spring-webflux", version.ref = "spring" }
 spring-context = { group = "org.springframework", name = "spring-context", version.ref = "spring" }
 fastjson2 = { group = "com.alibaba.fastjson2", name = "fastjson2-kotlin", version.ref = "fastjson2" }
-fastjson2-spring = { group = "com.alibaba.fastjson2", name = "fastjson2-extension-spring6", version.ref = "fastjson2" }
 
 # security vulnerabilities overrides
 commons-codec = { group = "commons-codec", name = "commons-codec", version.ref = "commons-codec" }
@@ -117,6 +118,7 @@ reactor-extensions = { group = "io.projectreactor.kotlin", name = "reactor-kotli
 reactor-test = { group = "io.projectreactor", name = "reactor-test", version.ref = "reactor-core" }
 rxjava = { group = "io.reactivex.rxjava3", name = "rxjava", version.ref = "rxjava" }
 spring-boot-test = { group = "org.springframework.boot", name = "spring-boot-starter-test", version.ref = "spring-boot" }
+spring-boot-webtestclient = { group = "org.springframework.boot", name = "spring-boot-webtestclient", version.ref = "spring-boot" }
 wiremock-lib = { group = "org.wiremock", name = "wiremock", version.ref = "wiremock" }
 wiremock-standalone = { group = "org.wiremock", name = "wiremock-standalone", version.ref = "wiremock" }
 

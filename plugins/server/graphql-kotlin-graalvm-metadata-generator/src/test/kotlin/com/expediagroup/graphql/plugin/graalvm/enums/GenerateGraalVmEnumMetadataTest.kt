@@ -21,9 +21,10 @@ import com.expediagroup.graphql.plugin.graalvm.FieldMetadata
 import com.expediagroup.graphql.plugin.graalvm.MethodMetadata
 import com.expediagroup.graphql.plugin.graalvm.generateGraalVmReflectMetadata
 import com.fasterxml.jackson.annotation.JsonInclude
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
+import tools.jackson.databind.json.JsonMapper
+import tools.jackson.module.kotlin.KotlinModule
 
 class GenerateGraalVmEnumMetadataTest {
 
@@ -66,8 +67,10 @@ class GenerateGraalVmEnumMetadataTest {
 
         val actual = generateGraalVmReflectMetadata(supportedPackages = listOf("com.expediagroup.graphql.plugin.graalvm.enums"))
 
-        val mapper = jacksonObjectMapper()
-            .setSerializationInclusion(JsonInclude.Include.NON_NULL)
+        val mapper = JsonMapper.builder()
+            .addModule(KotlinModule.Builder().build())
+            .changeDefaultPropertyInclusion { _ -> JsonInclude.Value.construct(JsonInclude.Include.NON_NULL, JsonInclude.Include.NON_NULL) }
+            .build()
         val writer = mapper.writerWithDefaultPrettyPrinter()
         Assertions.assertEquals(writer.writeValueAsString(expected), writer.writeValueAsString(actual))
     }

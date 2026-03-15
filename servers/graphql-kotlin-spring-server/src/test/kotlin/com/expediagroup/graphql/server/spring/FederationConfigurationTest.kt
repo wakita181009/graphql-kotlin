@@ -31,8 +31,6 @@ import com.expediagroup.graphql.generator.toSchema
 import com.expediagroup.graphql.server.execution.GraphQLContextFactory
 import com.expediagroup.graphql.server.execution.GraphQLRequestHandler
 import com.expediagroup.graphql.server.operations.Query
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import graphql.ExecutionInput
 import graphql.GraphQL
 import graphql.schema.GraphQLObjectType
@@ -46,6 +44,9 @@ import org.springframework.context.annotation.Configuration
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
+import tools.jackson.databind.ObjectMapper
+import tools.jackson.databind.json.JsonMapper
+import tools.jackson.module.kotlin.KotlinModule
 
 class FederationConfigurationTest {
 
@@ -140,7 +141,7 @@ class FederationConfigurationTest {
 
         // in regular apps object mapper will be created by JacksonAutoConfiguration
         @Bean
-        fun objectMapper(): ObjectMapper = jacksonObjectMapper()
+        fun objectMapper(): ObjectMapper = JsonMapper.builder().addModule(KotlinModule.Builder().build()).build()
 
         @Bean
         fun federatedQuery(): Query = FederatedQuery()
@@ -151,7 +152,7 @@ class FederationConfigurationTest {
 
         // in regular apps object mapper will be created by JacksonAutoConfiguration
         @Bean
-        fun objectMapper(): ObjectMapper = jacksonObjectMapper()
+        fun objectMapper(): ObjectMapper = JsonMapper.builder().addModule(KotlinModule.Builder().build()).build()
 
         @Bean
         fun customSchemaConfig(): FederatedSchemaGeneratorConfig = FederatedSchemaGeneratorConfig(

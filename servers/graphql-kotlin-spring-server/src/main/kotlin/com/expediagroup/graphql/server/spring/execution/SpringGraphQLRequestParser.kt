@@ -19,9 +19,6 @@ package com.expediagroup.graphql.server.spring.execution
 import com.expediagroup.graphql.server.execution.GraphQLRequestParser
 import com.expediagroup.graphql.server.types.GraphQLRequest
 import com.expediagroup.graphql.server.types.GraphQLServerRequest
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.databind.type.MapType
-import com.fasterxml.jackson.databind.type.TypeFactory
 import kotlinx.coroutines.reactive.awaitFirst
 import org.springframework.http.HttpMethod
 import org.springframework.http.HttpStatus
@@ -31,6 +28,9 @@ import org.springframework.web.reactive.function.server.awaitBody
 import org.springframework.web.reactive.function.server.bodyToMono
 import org.springframework.web.server.ResponseStatusException
 import kotlin.jvm.optionals.getOrNull
+import tools.jackson.databind.ObjectMapper
+import tools.jackson.databind.type.MapType
+import tools.jackson.databind.type.TypeFactory
 
 internal const val REQUEST_PARAM_QUERY = "query"
 internal const val REQUEST_PARAM_OPERATION_NAME = "operationName"
@@ -43,7 +43,7 @@ open class SpringGraphQLRequestParser(
     private val objectMapper: ObjectMapper
 ) : GraphQLRequestParser<ServerRequest> {
 
-    private val mapTypeReference: MapType = TypeFactory.defaultInstance().constructMapType(HashMap::class.java, String::class.java, Any::class.java)
+    private val mapTypeReference: MapType = TypeFactory.createDefaultInstance().constructMapType(HashMap::class.java, String::class.java, Any::class.java)
 
     override suspend fun parseRequest(request: ServerRequest): GraphQLServerRequest? = when {
         request.isGetPersistedQuery() || request.hasQueryParam() -> { getRequestFromGet(request) }

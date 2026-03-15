@@ -13,10 +13,10 @@ dependencies {
     api(libs.kotlinx.coroutines.jdk8)
     api(libs.kotlinx.coroutines.reactor)
     api(libs.reactor.extensions)
-    api(libs.fastjson2.spring)
     kapt(libs.spring.boot.config)
     testImplementation(libs.kotlinx.coroutines.test)
     testImplementation(libs.spring.boot.test)
+    testImplementation(libs.spring.boot.webtestclient)
     testImplementation(libs.reactor.test)
 }
 

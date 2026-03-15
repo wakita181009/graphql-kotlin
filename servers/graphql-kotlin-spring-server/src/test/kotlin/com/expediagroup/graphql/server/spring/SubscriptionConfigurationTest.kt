@@ -25,8 +25,6 @@ import com.expediagroup.graphql.server.operations.Subscription
 import com.expediagroup.graphql.server.spring.subscriptions.ApolloSubscriptionHooks
 import com.expediagroup.graphql.server.spring.subscriptions.ApolloSubscriptionWebSocketHandler
 import com.expediagroup.graphql.server.spring.subscriptions.SubscriptionWebSocketHandler
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import graphql.GraphQL
 import graphql.schema.GraphQLSchema
 import io.mockk.every
@@ -44,6 +42,9 @@ import kotlin.random.Random
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
+import tools.jackson.databind.ObjectMapper
+import tools.jackson.databind.json.JsonMapper
+import tools.jackson.module.kotlin.KotlinModule
 
 class SubscriptionConfigurationTest {
 
@@ -113,7 +114,7 @@ class SubscriptionConfigurationTest {
 
         // in regular apps object mapper will be created by JacksonAutoConfiguration
         @Bean
-        fun objectMapper(): ObjectMapper = jacksonObjectMapper()
+        fun objectMapper(): ObjectMapper = JsonMapper.builder().addModule(KotlinModule.Builder().build()).build()
 
         @Bean
         fun query(): Query = SimpleQuery()
@@ -137,7 +138,7 @@ class SubscriptionConfigurationTest {
 
         // in regular apps object mapper will be created by JacksonAutoConfiguration
         @Bean
-        fun objectMapper(): ObjectMapper = jacksonObjectMapper()
+        fun objectMapper(): ObjectMapper = JsonMapper.builder().addModule(KotlinModule.Builder().build()).build()
 
         @Bean
         fun query(): Query = SimpleQuery()

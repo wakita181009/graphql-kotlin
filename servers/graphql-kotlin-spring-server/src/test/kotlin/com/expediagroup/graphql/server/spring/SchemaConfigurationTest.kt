@@ -28,8 +28,6 @@ import com.expediagroup.graphql.dataloader.KotlinDataLoaderRegistryFactory
 import com.expediagroup.graphql.server.extensions.getValueFromDataLoader
 import com.expediagroup.graphql.server.operations.Query
 import com.expediagroup.graphql.server.spring.execution.SpringGraphQLContextFactory
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import graphql.GraphQL
 import graphql.GraphQLContext
 import graphql.execution.instrumentation.Instrumentation
@@ -50,6 +48,9 @@ import java.util.concurrent.CompletableFuture
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
+import tools.jackson.databind.ObjectMapper
+import tools.jackson.databind.json.JsonMapper
+import tools.jackson.module.kotlin.KotlinModule
 
 class SchemaConfigurationTest {
 
@@ -134,7 +135,7 @@ class SchemaConfigurationTest {
 
         // in regular apps object mapper will be created by JacksonAutoConfiguration
         @Bean
-        fun objectMapper(): ObjectMapper = jacksonObjectMapper()
+        fun objectMapper(): ObjectMapper = JsonMapper.builder().addModule(KotlinModule.Builder().build()).build()
 
         @Bean
         fun helloWorldQuery(): Query = BasicQuery()
@@ -151,7 +152,7 @@ class SchemaConfigurationTest {
 
         // in regular apps object mapper will be created by JacksonAutoConfiguration
         @Bean
-        fun objectMapper(): ObjectMapper = jacksonObjectMapper()
+        fun objectMapper(): ObjectMapper = JsonMapper.builder().addModule(KotlinModule.Builder().build()).build()
 
         @Bean
         fun customSchemaConfig(): SchemaGeneratorConfig = SchemaGeneratorConfig(

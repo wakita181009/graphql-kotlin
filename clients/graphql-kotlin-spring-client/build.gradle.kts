@@ -18,6 +18,13 @@ dependencies {
 
 tasks {
     jacocoTestCoverageVerification {
+        classDirectories.setFrom(
+            classDirectories.files.map {
+                fileTree(it) {
+                    exclude("**/GraphQLWebClient\$*\$*\$*inlined\$awaitBody*")
+                }
+            }
+        )
         violationRules {
             rule {
                 limit {

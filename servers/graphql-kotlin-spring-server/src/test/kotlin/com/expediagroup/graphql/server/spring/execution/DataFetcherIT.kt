@@ -18,7 +18,6 @@ package com.expediagroup.graphql.server.spring.execution
 import com.expediagroup.graphql.generator.hooks.SchemaGeneratorHooks
 import com.expediagroup.graphql.server.operations.Query
 import com.expediagroup.graphql.server.types.GraphQLRequest
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import graphql.GraphQLContext
 import graphql.execution.CoercedVariables
 import graphql.language.StringValue
@@ -31,8 +30,8 @@ import graphql.schema.GraphQLType
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration
-import org.springframework.boot.autoconfigure.jackson.Jackson2ObjectMapperBuilderCustomizer
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.boot.webtestclient.autoconfigure.AutoConfigureWebTestClient
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.http.MediaType
@@ -41,12 +40,23 @@ import java.time.LocalDate
 import java.util.Locale
 import kotlin.reflect.KType
 import kotlin.reflect.jvm.jvmErasure
+import tools.jackson.core.JsonGenerator
+import tools.jackson.core.JsonParser
+import tools.jackson.databind.DeserializationContext
+import tools.jackson.databind.ObjectMapper
+import tools.jackson.databind.SerializationContext
+import tools.jackson.databind.ValueDeserializer
+import tools.jackson.databind.ValueSerializer
+import tools.jackson.databind.json.JsonMapper
+import tools.jackson.databind.module.SimpleModule
+import tools.jackson.module.kotlin.KotlinModule
 
 @SpringBootTest(
     webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
     properties = ["graphql.packages=com.expediagroup.graphql.server.spring.execution"]
 )
 @EnableAutoConfiguration
+@AutoConfigureWebTestClient
 class DataFetcherIT(@Autowired private val testClient: WebTestClient) {
 
     @Test
@@ -78,9 +88,28 @@ class DataFetcherIT(@Autowired private val testClient: WebTestClient) {
         }
 
         @Bean
-        fun objectMapperCustomizer() = Jackson2ObjectMapperBuilderCustomizer { builder ->
-            builder.modulesToInstall(JavaTimeModule())
-        }
+        fun objectMapper(): ObjectMapper = JsonMapper.builder()
+            .addModule(KotlinModule.Builder().build())
+            .addModule(
+                SimpleModule().apply {
+                    addDeserializer(
+                        LocalDate::class.java,
+                        object : ValueDeserializer<LocalDate>() {
+                            override fun deserialize(p: JsonParser, ctxt: DeserializationContext): LocalDate =
+                                LocalDate.parse(p.getText())
+                        },
+                    )
+                    addSerializer(
+                        LocalDate::class.java,
+                        object : ValueSerializer<LocalDate>() {
+                            override fun serialize(value: LocalDate, gen: JsonGenerator, serializers: SerializationContext) {
+                                gen.writeString(value.toString())
+                            }
+                        },
+                    )
+                }
+            )
+            .build()
 
         private val localDateType = GraphQLScalarType.newScalar()
             .name("LocalDate")
