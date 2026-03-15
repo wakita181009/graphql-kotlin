@@ -40,7 +40,7 @@ graalvmNative {
 graphql {
     graalVm {
         packages = listOf("com.expediagroup.graalvm")
-        mainClassName = "com.expediagroup.graalvm.spring.ApplicationKt"
+        mainClassName = "com.expediagroup.graalvm.spring.Application"
     }
 }
 
